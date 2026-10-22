@@ -1,5 +1,7 @@
 <h1><img src="https://raw.githubusercontent.com/aleksozolins/orgwarrior-web/main/src/orgwarrior_web/static/icon.svg" alt="" width="44" align="top"> orgwarrior-web</h1>
 
+[![tests](https://github.com/aleksozolins/orgwarrior-web/actions/workflows/ci.yml/badge.svg)](https://github.com/aleksozolins/orgwarrior-web/actions/workflows/ci.yml)
+
 **A porcelain for Org's agenda, in your browser, phone first.** A small
 web page over [orgwarrior](https://github.com/aleksozolins/orgwarrior)'s
 engine: Org stays the source of truth, and your running Emacs does all the
