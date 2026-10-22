@@ -1,0 +1,12 @@
+#+title: Inbox
+#+filetags: :inbox:
+
+* Tasks
+** TODO Call the plumber about the slow drain
+:PROPERTIES:
+:CAPTURED: [{{0}} 08:12]
+:END:
+** TODO Look into a standing desk
+:PROPERTIES:
+:CAPTURED: [{{-1}} 21:40]
+:END:

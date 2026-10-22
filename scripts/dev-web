@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# The page against orgwarrior's dev daemon (its scripts/dev-daemon, started
+# if it isn't running): the daemon's config and a tokens file of its own,
+# so it's open on 127.0.0.1 without signing in.  Your real daemon, config,
+# tokens and ~/org are never touched.  Linux and macOS (bash 3.2 and up).
+#   scripts/dev-web                     http://127.0.0.1:22599
+#   scripts/dev-web --port 22600        any orgwarrior-web option after
+#   ORGWARRIOR_REPO=... scripts/dev-web orgwarrior's checkout, if not ../orgwarrior
+set -euo pipefail
+repo=$(cd "$(dirname "$0")/.." && pwd)
+orgwarrior=${ORGWARRIOR_REPO:-$repo/../orgwarrior}
+base=${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}
+dir="${base%/}/orgwarrior-dev"
+[[ -x "$orgwarrior/scripts/dev-daemon" ]] || { echo "dev-web: no orgwarrior checkout at $orgwarrior (ORGWARRIOR_REPO)" >&2; exit 1; }
+if ! env -u ALTERNATE_EDITOR emacsclient --socket-name orgwarrior-dev --eval t >/dev/null 2>&1 \
+   || [[ ! -f "$dir/config.toml" ]]; then
+  "$orgwarrior/scripts/dev-daemon"
+fi
+mkdir -p "$dir/web-state"
+export ORGWARRIOR_CONFIG="$dir/config.toml" ORGWARRIOR_SOCKET=orgwarrior-dev XDG_STATE_HOME="$dir/web-state"
+exec uv run --project "$repo" --quiet orgwarrior-web --socket orgwarrior-dev --host 127.0.0.1 --port 22599 ${1+"$@"}  # ${1+...}: an empty "$@" under set -u, safe on bash 3.2

@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Every README screenshot, from docs/demo's made-up org files: the page
+# (desktop and phone) into docs/screenshots/, the command line into
+# orgwarrior's docs/screenshots/.  A throwaway daemon and server, real
+# org files never touched.  Linux: the browser is scripts/get-browser's,
+# the fonts a phone or desktop would show (Roboto, JetBrains Mono, Noto
+# Color Emoji) fetched into ~/.cache/orgwarrior-web/fonts.
+set -euo pipefail
+repo=$(cd "$(dirname "$0")/.." && pwd)
+orgwarrior=${ORGWARRIOR_REPO:-$repo/../orgwarrior}
+browser=${ORGWARRIOR_WEB_BROWSER:-${XDG_CACHE_HOME:-$HOME/.cache}/orgwarrior-web/browser}
+fonts=${XDG_CACHE_HOME:-$HOME/.cache}/orgwarrior-web/fonts
+[[ -x "$browser/chrome-headless-shell-linux64/chrome-headless-shell" ]] || { echo "screenshots: run scripts/get-browser first" >&2; exit 1; }
+[[ -d "$orgwarrior/src/orgwarrior" ]] || { echo "screenshots: no orgwarrior checkout at $orgwarrior (ORGWARRIOR_REPO)" >&2; exit 1; }
+
+mkdir -p "$fonts"
+get() { [[ -s "$fonts/$1" ]] || curl -sSfL -o "$fonts/$1" "https://github.com/google/fonts/raw/main/ofl/$2"; }
+get Roboto.ttf "roboto/Roboto%5Bwdth,wght%5D.ttf"
+get JetBrainsMono.ttf "jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf"
+get JetBrainsMono-Italic.ttf "jetbrainsmono/JetBrainsMono-Italic%5Bwght%5D.ttf"
+get NotoColorEmoji.ttf "notocoloremoji/NotoColorEmoji-Regular.ttf"
+
+base=${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}
+work=$(mktemp -d "${base%/}/orgwarrior-shots.XXXXXX")
+name="orgwarrior-shots-$$" port=22597
+cleanup() {
+  [[ -n "${server:-}" ]] && kill "$server" 2>/dev/null
+  env -u ALTERNATE_EDITOR emacsclient --socket-name "$name" --eval '(kill-emacs)' >/dev/null 2>&1 || true
+  rm -rf "$work"
+}
+trap cleanup EXIT
+
+DEMO_DEST="$work/org" emacs -Q --daemon="$name" -l "$repo/docs/demo/init.el" 2>"$work/emacs.log" \
+  || { cat "$work/emacs.log" >&2; exit 1; }
+cat > "$work/config.toml" <<TOML
+color = "always"
+time_grid = true
+
+[views]
+dash = "d"
+inbox = "i"
+
+[add]
+file = "$work/org/inbox.org"
+heading = "Tasks"
+captured = true
+
+[colors]
+NEXT = "bold cyan"
+WAIT = "bold magenta"
+
+[web]
+name = "Sam"
+
+[web.tabs]
+today = "today"
+week = "week"
+next = "next"
+projects = "projects.org"
+TOML
+# The fonts a visitor sees: Roboto as the system font (Android's), JetBrains
+# Mono as the monospace the page asks for, emoji in color.
+cat > "$work/fonts.conf" <<XML
+<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <include ignore_missing="yes">/etc/fonts/fonts.conf</include>
+  <dir>$fonts</dir>
+  <cachedir>$work/fontcache</cachedir>
+  <alias binding="strong"><family>system-ui</family><prefer><family>Roboto</family><family>Noto Color Emoji</family></prefer></alias>
+  <alias binding="strong"><family>sans-serif</family><prefer><family>Roboto</family><family>Noto Color Emoji</family></prefer></alias>
+  <alias binding="strong"><family>monospace</family><prefer><family>JetBrains Mono</family><family>Noto Color Emoji</family></prefer></alias>
+  <alias binding="strong"><family>ui-monospace</family><prefer><family>JetBrains Mono</family><family>Noto Color Emoji</family></prefer></alias>
+</fontconfig>
+XML
+export ORGWARRIOR_CONFIG="$work/config.toml" ORGWARRIOR_SOCKET="$name" XDG_STATE_HOME="$work/state"
+
+uv run --project "$repo" --quiet orgwarrior-web --socket "$name" --port "$port" >"$work/server.log" 2>&1 &
+server=$!
+for _ in $(seq 50); do curl -sf "http://127.0.0.1:$port/healthz" >/dev/null && break; sleep 0.2; done
+
+# The command line, as a terminal shows it, captured for the browser to draw.
+mkdir -p "$work/cli"
+uv run --project "$repo" --quiet python "$repo/scripts/screenshots-cli.py" "$work/cli"
+
+mkdir -p "$repo/docs/screenshots" "$orgwarrior/docs/screenshots"
+FONTCONFIG_FILE="$work/fonts.conf" BASE="http://127.0.0.1:$port" BROWSER="$browser" CLI="$work/cli" \
+  WEB_OUT="$repo/docs/screenshots" CLI_OUT="$orgwarrior/docs/screenshots" \
+  deno run -A "$repo/scripts/screenshots.js"
+echo "screenshots: $repo/docs/screenshots, $orgwarrior/docs/screenshots"

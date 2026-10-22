@@ -1,0 +1,713 @@
+/* Themes: --c0..--c15 are the ANSI colors config.toml's [colors] name (black..white,
+   then bright-*).  No data-theme: Modus tinted, following the phone's light/dark. */
+:root, :root[data-theme="modus-operandi-tinted"] {
+  --bg: #fbf7f0; --fg: #000000; --muted: #595959; --line: #dfd5cf; --chip: #efe9dd; --accent: #0031a9;
+  --c0: #000000; --c1: #a60000; --c2: #006800; --c3: #6f5500; --c4: #0031a9; --c5: #721045; --c6: #005e8b; --c7: #595959;
+  --c8: #595959; --c9: #d00000; --c10: #008900; --c11: #808000; --c12: #0000b0; --c13: #dd22dd; --c14: #008899; --c15: #000000;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #0d0e1c; --fg: #ffffff; --muted: #989898; --line: #2b3045; --chip: #1d2235; --accent: #2fafff;
+    --c0: #989898; --c1: #ff5f59; --c2: #44bc44; --c3: #d0bc00; --c4: #2fafff; --c5: #feacd0; --c6: #00d3d0; --c7: #ffffff;
+    --c8: #989898; --c9: #ff5f5f; --c10: #44df44; --c11: #efef00; --c12: #338fff; --c13: #ff66ff; --c14: #00eff0; --c15: #ffffff;
+  }
+}
+:root[data-theme="modus-vivendi-tinted"] {
+  --bg: #0d0e1c; --fg: #ffffff; --muted: #989898; --line: #2b3045; --chip: #1d2235; --accent: #2fafff;
+  --c0: #989898; --c1: #ff5f59; --c2: #44bc44; --c3: #d0bc00; --c4: #2fafff; --c5: #feacd0; --c6: #00d3d0; --c7: #ffffff;
+  --c8: #989898; --c9: #ff5f5f; --c10: #44df44; --c11: #efef00; --c12: #338fff; --c13: #ff66ff; --c14: #00eff0; --c15: #ffffff;
+}
+:root[data-theme="gruvbox-light"] {
+  --bg: #fbf1c7; --fg: #3c3836; --muted: #7c6f64; --line: #ebdbb2; --chip: #f2e5bc; --accent: #076678;
+  --c0: #3c3836; --c1: #9d0006; --c2: #79740e; --c3: #b57614; --c4: #076678; --c5: #8f3f71; --c6: #427b58; --c7: #7c6f64;
+  --c8: #928374; --c9: #cc241d; --c10: #98971a; --c11: #d79921; --c12: #458588; --c13: #b16286; --c14: #689d6a; --c15: #3c3836;
+}
+:root[data-theme="gruvbox-dark"] {
+  --bg: #282828; --fg: #ebdbb2; --muted: #a89984; --line: #3c3836; --chip: #32302f; --accent: #83a598;
+  --c0: #928374; --c1: #fb4934; --c2: #b8bb26; --c3: #fabd2f; --c4: #83a598; --c5: #d3869b; --c6: #8ec07c; --c7: #d5c4a1;
+  --c8: #a89984; --c9: #fb4934; --c10: #b8bb26; --c11: #fabd2f; --c12: #83a598; --c13: #d3869b; --c14: #8ec07c; --c15: #fbf1c7;
+}
+:root[data-theme="dracula"] {
+  --bg: #282a36; --fg: #f8f8f2; --muted: #8a94c4; --line: #44475a; --chip: #343746; --accent: #bd93f9;
+  --c0: #6272a4; --c1: #ff5555; --c2: #50fa7b; --c3: #f1fa8c; --c4: #bd93f9; --c5: #ff79c6; --c6: #8be9fd; --c7: #f8f8f2;
+  --c8: #6272a4; --c9: #ff6e6e; --c10: #69ff94; --c11: #ffffa5; --c12: #d6acff; --c13: #ff92df; --c14: #a4ffff; --c15: #ffffff;
+}
+:root[data-theme="nord"] {
+  --bg: #2e3440; --fg: #d8dee9; --muted: #8a93a6; --line: #3b4252; --chip: #3b4252; --accent: #88c0d0;
+  --c0: #7b88a1; --c1: #bf616a; --c2: #a3be8c; --c3: #ebcb8b; --c4: #81a1c1; --c5: #b48ead; --c6: #88c0d0; --c7: #e5e9f0;
+  --c8: #7b88a1; --c9: #d08770; --c10: #a3be8c; --c11: #ebcb8b; --c12: #5e81ac; --c13: #b48ead; --c14: #8fbcbb; --c15: #eceff4;
+}
+:root[data-theme="solarized-light"] {
+  --bg: #fdf6e3; --fg: #586e75; --muted: #93a1a1; --line: #eee8d5; --chip: #eee8d5; --accent: #268bd2;
+  --c0: #073642; --c1: #dc322f; --c2: #859900; --c3: #b58900; --c4: #268bd2; --c5: #d33682; --c6: #2aa198; --c7: #93a1a1;
+  --c8: #657b83; --c9: #cb4b16; --c10: #859900; --c11: #b58900; --c12: #268bd2; --c13: #6c71c4; --c14: #2aa198; --c15: #073642;
+}
+:root[data-theme="solarized-dark"] {
+  --bg: #002b36; --fg: #93a1a1; --muted: #657b83; --line: #073642; --chip: #073642; --accent: #268bd2;
+  --c0: #586e75; --c1: #dc322f; --c2: #859900; --c3: #b58900; --c4: #268bd2; --c5: #d33682; --c6: #2aa198; --c7: #eee8d5;
+  --c8: #839496; --c9: #cb4b16; --c10: #859900; --c11: #b58900; --c12: #268bd2; --c13: #6c71c4; --c14: #2aa198; --c15: #fdf6e3;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }  /* even where a class sets display */
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+header {
+  position: sticky; top: 0; z-index: 1; background: var(--bg);
+  border-bottom: 1px solid var(--line); padding: 8px 12px 10px;
+}
+.topbar { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; }
+.brand {
+  flex: none; display: flex; align-items: center; gap: 4px; text-decoration: none;
+  font: 700 20px/1 ui-monospace, "JetBrains Mono", monospace; color: var(--accent);
+}
+/* The icon's checkbox, in the theme's colors. */
+/* 30 px: as big as fits beside five tabs on a 412 px phone (a Pixel 9a). */
+.brand svg { width: 30px; height: 30px; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.brand .bracket { stroke: var(--accent); stroke-width: 8; }
+.brand .check { stroke: var(--c2); stroke-width: 9; }
+/* The letters as the icon: org in the brackets' color, warrior in the check's,
+   staggered like the check's rising stroke.  Shifted, not sub/superscript:
+   shrunk at 20 px, a letter turns into a speck. */
+.brand .word { display: flex; }
+.brand .org { transform: translateY(-4px); }
+.brand .warrior { transform: translateY(4px); color: var(--c2); }
+.brand .full { display: none; }
+#tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+#tabs::-webkit-scrollbar { display: none; }
+#tabs.more { mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+#tabs a {
+  flex: none; padding: 6px 12px; border-radius: 999px; background: var(--chip);
+  color: var(--fg); text-decoration: none; font-size: 15px;
+}
+#tabs a.on { background: var(--accent); color: var(--bg); font-weight: 600; }
+/* Saved from the page (changeable there), apart from the config's. */
+#tabs a.saved { background: transparent; border: 1px dashed var(--muted); padding: 5px 11px; }
+#tabs a.saved.on { background: var(--accent); border-color: var(--accent);
+  outline: 1px dashed var(--bg); outline-offset: -4px; }  /* shown, still apart */
+#savetab { flex: none; font: inherit; font-size: 15px; padding: 5px 11px; border-radius: 999px;
+  border: 1px dashed var(--line); background: transparent; color: var(--muted); }
+#search { display: flex; gap: 8px; }
+#q {
+  flex: 1; min-width: 0; font: inherit; padding: 8px 10px; border-radius: 8px;
+}
+#new { display: none; font: inherit; font-weight: 600; padding: 0 14px; border: 0; border-radius: 8px;
+  background: var(--accent); color: var(--bg); white-space: nowrap; }
+#reload, #gear {
+  font: inherit; font-size: 20px; min-width: 44px; padding: 0 8px; border: 0; border-radius: 8px;
+  background: var(--chip); color: var(--fg); white-space: nowrap;  /* its key beside it, not under */
+}
+#gear[aria-expanded="true"] { background: var(--accent); color: var(--bg); }
+/* Preferences: a drawer that leaves the page behind undimmed. */
+#settings { padding-top: 2px; }
+#sheet.clear { background: transparent; }
+#sheet.clear .sheet-body { box-shadow: 0 -4px 24px rgb(0 0 0 / .25); }
+.setting-title { font-size: 13px; color: var(--muted); margin: 0 0 6px 2px; }
+.keys-only .setting-title, .clocked-title { margin-top: 14px; }
+#themes, #modes, #hints, #clockreport { display: flex; flex-wrap: wrap; gap: 6px; }
+#modes { margin-top: 8px; }
+#themes button, #modes button, #hints button, #clockreport button {
+  font: inherit; font-size: 15px; padding: 7px 12px; border-radius: 999px;
+}
+#themes button[aria-checked="true"], #modes button[aria-checked="true"], #hints button[aria-checked="true"],
+#clockreport button[aria-checked="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+/* The fields' and buttons' look; each rule below sets its size. */
+#q, #themes button, #modes button, #hints button, #clockreport button,
+#dr-title, .moves button, .chips button, .actions button, .state-chip,
+.list button, .sheet-buttons button, .date-row button, .bar-head button,
+.move-list button, .sheet-body textarea, .sheet-body input:not([type=date]), .sheet-body select,
+.date-row input, .add-page select, .add-page #title, .add-page input:not(#title),
+.task-fields input, textarea.org, .org-tools button, .signin #key {
+  border: 1px solid var(--line); background: var(--chip); color: var(--fg);
+}
+main { padding: 4px 0 88px; }  /* the last row clears the + */
+.status { padding: 24px 16px; color: var(--muted); }
+.error { padding: 16px; color: var(--c1); white-space: pre-wrap; }
+
+/* Every section line of the list sticks while its section scrolls by, the
+   latest covering the one before: a view's (or block's) title, a day in a
+   week, a file's Outline line with its + Add. */
+.head, .day, #list .kids > .section-title { position: sticky; top: var(--header-h, 0); z-index: 1; background: var(--bg); }
+/* A row scrolled into view (the cursor, a click) lands below that line, not under it. */
+html:has(body[data-page=view]) { scroll-padding-top: calc(var(--header-h, 0px) + 52px); }
+.head { padding: 16px 16px 6px; font-weight: 700; }
+.day { padding: 14px 16px 4px; font-weight: 600; color: var(--accent); }
+.day.today { text-decoration: underline; text-underline-offset: 3px; }
+:is(.day, .head).stepper { display: flex; align-items: center; gap: 4px; padding: 8px 6px 4px; text-decoration: none; }
+:is(.day, .head).stepper .pick {
+  flex: 1; position: relative; text-align: center; padding: 8px 0; cursor: pointer;
+}
+.day.today.stepper .pick span { text-decoration: underline; text-underline-offset: 3px; }
+/* The picker opens from here; the input itself stays out of sight. */
+:is(.day, .head).stepper .pick input {
+  position: absolute; left: 50%; bottom: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none;
+}
+:is(.day, .head).stepper button {
+  font: inherit; font-size: 22px; line-height: 1; width: 44px; height: 40px;
+  border: 0; background: none; color: inherit;  /* the date's color; the size is the tap target */
+}
+.sep { height: 0; border-top: 2px solid var(--line); margin: 14px 0 0; }
+.plain { padding: 2px 16px; color: var(--muted); white-space: pre-wrap; }
+.now { display: flex; align-items: center; gap: 8px; padding: 8px 16px; color: var(--accent); font-size: 13px; }
+.now::after { content: ""; flex: 1; border-top: 2px solid currentColor; }
+
+.task {
+  display: block; width: 100%; text-align: left; font: inherit; color: inherit;
+  background: none; border: 0; border-bottom: 1px solid var(--line);
+  padding: 9px 16px; cursor: pointer; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none;
+}
+.task:active { background: var(--chip); }
+.task.picked { background: var(--chip); box-shadow: inset 4px 0 0 var(--accent); }
+/* A file's tree: indented by depth, a fold mark before each heading's title. */
+.task.node { padding-left: calc(6px + var(--d, 0) * 22px); }
+.fold-tw { display: inline-block; width: 26px; text-align: center; color: var(--muted); font-size: 13px; }
+.fold-tw[data-tw] { cursor: pointer; }
+.task.moved { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.reordering .sub { display: none; }  /* reordering the top level: the folds put away */
+/* A long outline or body: the first rows, the rest behind "Show …". */
+.rows.clipped > .task:nth-child(n+13) { display: none; }
+.show-more, .more-body > summary { font: inherit; font-size: 14px; color: var(--accent); background: none; border: 0;
+  padding: 8px 16px; cursor: pointer; list-style: none; }
+.more-body[open] > summary { display: none; }
+/* Keyboard focus: a ring in the text's color, outside a pressed choice's
+   accent outline, so the current state and the focus never look alike. */
+:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
+.chips button[aria-pressed="true"]:focus-visible { box-shadow: 0 0 0 4px var(--bg), 0 0 0 6px var(--fg); }
+input:focus-visible, textarea:focus-visible, select:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+/* The keys' cursor: shown only while they're in use (body.keyboard). */
+.keyboard .task.cursor { outline: 2px solid var(--accent); outline-offset: -2px; }
+.keys { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 8px; }
+.keys dt { font: 14px ui-monospace, "JetBrains Mono", monospace; color: var(--accent); }
+.keys dd { margin: 0; }
+/* ?'s groups; · marks a key that isn't org's (the preset's, [web.keys]'). */
+.keys-group { grid-column: 1 / -1; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .04em; margin-top: 10px; }
+.keys-group:first-child { margin-top: 0; }
+#sheet .hint kbd { white-space: nowrap; }
+.keys .rebound { color: var(--accent); font-weight: 700; }
+/* A sequence under way (d, of d d): its keys so far, as Emacs's echo area shows C-x-. */
+#keyseq { position: fixed; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 20;
+  font: 600 14px ui-monospace, "JetBrains Mono", monospace; padding: 6px 10px; border-radius: 8px;
+  background: var(--chip); color: var(--fg); border: 1px solid var(--line); box-shadow: 0 6px 24px rgb(0 0 0 / .18); }
+.keys kbd, .start kbd { font: 13px ui-monospace, monospace; }
+.start { padding: 0 16px; }
+.start .status { padding-left: 0; }
+pre.help { font: 13px/1.45 ui-monospace, "JetBrains Mono", monospace; white-space: pre-wrap; margin: 0 0 8px; }
+.keys-hint { margin-top: 12px; font-size: 14px; color: var(--muted); }
+.keys-hint kbd { font: 13px ui-monospace, monospace; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; }
+/* c's card: only what's set, the keys that set the rest under it. */
+#dr-title { font: inherit; font-size: 18px; width: 100%; padding: 10px 12px; border-radius: 8px;
+  }
+.draft { display: grid; gap: 4px; margin: 10px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.outline-list { margin: 8px 0 4px; padding-left: 1.2em; }
+.outline-list li { margin: 2px 0; }
+.draft .dr-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 2px; }
+.draft .dr-head .kw { font-weight: 700; }
+/* What's set: a muted label, the value in the text's color; one line each, a long one cut. */
+.draft .dr-row { display: grid; grid-template-columns: 6.5em 1fr; gap: 8px; }
+.draft .dr-row .label { color: var(--muted); }
+.draft .dr-row > :last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.draft .muted, .draft-keys kbd { color: var(--muted); }
+.draft-keys { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 14px; color: var(--muted); }
+.draft-keys kbd { font: 700 13px ui-monospace, monospace; color: var(--fg); margin-right: 3px; }
+@media (hover: none) and (pointer: coarse) { .keys-hint, .keys-only { display: none; } }
+.task.static { cursor: default; }
+.task.static:active { background: none; }
+.reordering .task { display: flex; align-items: center; gap: 8px; }
+.reordering .task .title { flex: 1; min-width: 0; }
+.moves { display: flex; gap: 6px; }
+.moves button {
+  font: inherit; font-size: 15px; min-width: 44px; min-height: 40px; border-radius: 8px;
+}
+.kids > .sheet-buttons { padding: 0 16px; }
+.meta { display: flex; gap: 8px; font-size: 13px; color: var(--muted); }
+.meta .id { margin-left: auto; font-family: ui-monospace, monospace; color: var(--c4); }
+.title { margin-top: 2px; }
+.habit { margin-top: 4px; font: 13px/1.3 ui-monospace, "JetBrains Mono", monospace; white-space: pre; }
+/* Its days in the theme's own colors, as org-habit's states: clear blue, ready
+   green, alert yellow, overdue red.  -future is org's dim variant, on every day
+   but one done, today or an overdue one (org-habit-build-graph), so it's
+   fainter.  Each glyph (* done, ! today) black or white, whichever reads. */
+.habit { --habit-past: 100%; --habit-future: 45%; }
+.habit [data-habit] { --day: var(--chip); background: var(--day);
+  color: oklch(from var(--day) clamp(0, (0.66 - l) * 1000, 1) 0 0); }
+.habit [data-habit=habit-clear] { --day: color-mix(in oklab, var(--c4) var(--habit-past), var(--bg)); }
+.habit [data-habit=habit-ready] { --day: color-mix(in oklab, var(--c2) var(--habit-past), var(--bg)); }
+.habit [data-habit=habit-alert] { --day: color-mix(in oklab, var(--c3) var(--habit-past), var(--bg)); }
+.habit [data-habit=habit-overdue] { --day: color-mix(in oklab, var(--c1) var(--habit-past), var(--bg)); }
+.habit [data-habit=habit-clear-future] { --day: color-mix(in oklab, var(--c4) var(--habit-future), var(--bg)); }
+.habit [data-habit=habit-ready-future] { --day: color-mix(in oklab, var(--c2) var(--habit-future), var(--bg)); }
+.habit [data-habit=habit-alert-future] { --day: color-mix(in oklab, var(--c3) var(--habit-future), var(--bg)); }
+.habit [data-habit=habit-overdue-future] { --day: color-mix(in oklab, var(--c1) var(--habit-future), var(--bg)); }
+.kw { font-weight: 700; margin-right: 6px; }
+.tag {
+  display: inline-block; font-size: 12px; padding: 1px 7px; margin: 2px 0 0 4px;
+  border-radius: 999px; background: var(--chip); color: var(--muted); vertical-align: 1px;
+}
+
+.detail { padding: 12px 16px; }
+.detail .where { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+.detail .where .id { font-family: ui-monospace, monospace; color: var(--c4); margin-right: 8px; }
+.detail .where a { color: inherit; text-decoration: underline dotted; text-underline-offset: 3px; }
+.detail .where .from { margin-left: 8px; padding: 0 7px; border-radius: 999px; background: var(--chip); color: var(--c5); }
+.detail pre {
+  margin: 0; white-space: pre-wrap; overflow-wrap: anywhere;
+  font: 14px/1.45 ui-monospace, "JetBrains Mono", monospace;
+}
+.section-title {
+  padding: 14px 16px 6px; border-bottom: 1px solid var(--line);
+  font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+}
+.detail pre a { color: var(--accent); }
+.detail pre button.checkbox {
+  font: inherit; color: inherit; background: none; border: 0; cursor: pointer;
+  padding: 8px 4px; margin: -8px -4px;  /* a thumb-sized target, same layout */
+}
+.back { font: inherit; border: 0; background: none; color: var(--accent); padding: 12px 16px 0; }
+
+
+/* Actions: the task page's controls, sheets, the selection bar, the toast. */
+/* The task page: its title, tapped to rename, then its fields. */
+.detail .heading {
+  font-size: 20px; font-weight: 600; line-height: 1.3; margin: 2px 0 8px; cursor: text; overflow-wrap: anywhere;
+  text-decoration: underline dotted var(--muted); text-decoration-thickness: 1px; text-underline-offset: 5px;
+}
+.detail .heading::after { content: "✎"; display: inline-block; margin-left: 6px; font-size: 14px; font-weight: 400; color: var(--muted); }
+.detail .heading a { color: var(--accent); }
+.title-edit { margin: 2px 0 8px; }
+/* The title's copy, stuck at the top once the real one scrolls away; no
+   space of its own (the negative margin), so nothing jumps as it shows. */
+.stuck-title {
+  position: sticky; top: var(--header-h, 0); z-index: 3; height: 40px; margin-bottom: -40px; box-sizing: border-box;
+  padding: 9px 16px; font-weight: 600; background: var(--bg); border-bottom: 1px solid var(--line);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+  opacity: 0; pointer-events: none; transition: opacity .12s;
+}
+.stuck-title.on { opacity: 1; pointer-events: auto; }
+.title-edit .sheet-buttons, details.fold > .sheet-buttons { margin-top: 8px; }
+/* The task's fields: what's set, each a link to its sheet; what isn't, adders. */
+.field-line { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; }
+.field-line button { font: inherit; font-size: 15px; border: 0; background: none; color: var(--fg); padding: 2px 0;
+  cursor: pointer; text-align: left; }
+.field-line .label { color: var(--muted); }
+.field-line .closed { font-size: 15px; padding: 2px 0; }
+.field-line .tag { margin-left: 4px; }
+.task-fields .adders, .add-fields .adders { border-top: 0; padding: 10px 0 0; }
+.add-fields { margin-bottom: 14px; }
+.field-line .needs { color: var(--c1); }  /* an event's When, needed to add it */
+/* A section's name, a control of its own (its key's sheet): read as the title. */
+.section-title .section-name { margin-left: 0; color: inherit; text-transform: inherit; letter-spacing: inherit; font-size: inherit; }
+.task-fields { padding-bottom: 16px; }
+.section-title.with-action { display: flex; align-items: baseline; }
+.section-title button {
+  font: inherit; border: 0; background: none; color: var(--accent); padding: 0; cursor: pointer;
+}
+.section-title button, .section-title .add-here { margin-left: auto; font-size: 14px; text-transform: none; letter-spacing: 0; }
+.section-title .add-here { color: var(--accent); text-decoration: none; }
+.section-title .add-here + button { margin-left: 16px; }
+/* A zoom's line: ‹ out a level, the path to zoom to, the heading itself; on
+   a phone a line of its own, + Add and Reorder under it. */
+.section-title .crumbs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; min-width: 0; flex: 1;
+  font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--muted); }
+.crumbs a { color: var(--accent); text-decoration: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crumbs .up { padding: 8px 8px 8px 0; margin: -8px 0; }  /* a thumb-sized target */
+.crumbs a.here { color: var(--fg); font-weight: 600; }
+@media (max-width: 999px) {
+  #list .kids > .section-title:has(.crumbs) { flex-wrap: wrap; }
+  .section-title .crumbs { flex: 1 0 100%; margin-bottom: 6px; }
+}
+/* Notes: newest first, each under its date (and state, for a state change's). */
+.notes { padding-block: 4px 12px; }
+/* A log item, tapped to change it: a note, or a quiet line for one without. */
+.note { display: block; width: 100%; font: inherit; color: inherit; background: none; border: 0; border-radius: 0;
+  border-bottom: 1px solid var(--line); padding: 8px 0; text-align: left; cursor: pointer; }
+.note:last-child { border-bottom: 0; }
+.note .when { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-size: 13px; color: var(--muted); }
+.note.quiet { padding: 6px 0; }
+.note .when .what, .note .when .from { color: var(--fg); }
+.note .when .from { color: var(--muted); }
+.note .when .kw { font-size: 13px; }
+.note .text { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 2px; }
+details.older > summary { color: var(--accent); cursor: pointer; padding: 8px 0 0; font-size: 14px; }
+.note-edit { padding: 8px 0 4px; }
+.note-edit textarea { margin-top: 0; }
+.detail pre.heading { font-weight: 700; }
+.detail pre + pre, .detail details + pre, .detail pre + details { margin-top: 6px; }
+details.fold > summary { margin: 12px 0 0; color: var(--muted); cursor: pointer; }
+details.fold > summary span { color: var(--fg); }
+details.drawer summary {
+  font: 14px/1.45 ui-monospace, "JetBrains Mono", monospace; color: var(--muted);
+  cursor: pointer; padding: 4px 0;
+}
+details.drawer summary span { opacity: .8; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.actions button, .sheet-buttons button, #new { white-space: nowrap; }  /* a label and its key, one line */
+.chips button, .actions button, .list button, .sheet-buttons button, .date-row button, .bar-head button {
+  font: inherit; font-size: 15px; padding: 8px 12px; border-radius: 8px;
+}
+.chips button { border-radius: 999px; font-weight: 600; }
+.chips button[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 1px; }
+.actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
+.actions.page-actions, .actions.menu-fields { grid-template-columns: repeat(4, 1fr); }
+#sheet .actions + .actions { margin-top: -2px; }  /* the menu's rows, one block: 6px apart */
+.menu-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.menu-head button { flex: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--accent);
+  background: none; border: 0; padding: 4px 0 4px 8px; cursor: pointer; }
+.move-list button:disabled { opacity: .45; }
+/* The Move sheet's four, one per line: each names a heading, which can be long. */
+.move-list { display: grid; gap: 6px; margin: 8px 0 12px; }
+.move-list button { font: inherit; font-size: 15px; padding: 9px 12px; border-radius: 8px; text-align: left;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button.danger { color: var(--c1); }
+button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+button.primary.danger { background: var(--c1); border-color: var(--c1); color: var(--bg); }
+#discard { border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--fg); padding: 16px; }
+#discard::backdrop { background: rgb(0 0 0 / .45); }
+#discard p { margin: 0 0 4px; font-weight: 700; }
+.tagchip { font-weight: 400 !important; }
+.tagchip.on { background: var(--accent) !important; color: var(--bg) !important; border-color: var(--accent) !important; }
+.tagchip.off { text-decoration: line-through; color: var(--c1) !important; }
+
+#sheet {
+  position: fixed; inset: 0; z-index: 10; background: rgb(0 0 0 / .45);
+  display: flex; align-items: flex-end;
+}
+.sheet-body {
+  width: 100%; max-height: 85vh; overflow-y: auto; background: var(--bg);
+  border-radius: 16px 16px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+}
+.sheet-title { font-weight: 700; margin-bottom: 8px; }
+.hint { color: var(--muted); font-size: 14px; margin: 6px 0; }
+.sheet-body textarea, .sheet-body input:not([type=date]), .sheet-body select, .date-row input, .add-page select {
+  font: inherit; width: 100%; padding: 8px 10px; border-radius: 8px;
+}
+.date-row { display: flex; gap: 8px; margin: 8px 0; align-items: end; }
+.date-row input { flex: 1; min-width: 0; }
+.date-row .field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.date-row .field > span { font-size: 13px; }
+/* iOS shrinks an empty date or time field to nothing. */
+.date-row .field input { width: 100%; min-height: 2.6em; }
+.date-row .field > span, .field-label { color: var(--muted); }
+.field-label { margin: 12px 0 0; }
+.sheet-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+.sheet-buttons .clear { margin-right: auto; }
+.list { display: flex; flex-direction: column; gap: 6px; }
+.list button { text-align: left; }
+.list .new-heading { color: var(--accent); }
+#sheet .list button.usual { font-weight: 600; }
+/* Enter's choice (the usual, else the first match): drawn as chosen. */
+#sheet .list button.first { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+#sheet .list button.first .usual-tag { color: inherit; opacity: .8; }
+#rf-filter { margin-bottom: 14px; }
+.usual-tag { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+ul.confirm { margin: 4px 0; padding-left: 20px; }
+
+/* Below 1000 px one pane at a time: the list on a view, else the task (or
+   the add or edit page), the other kept in the page, hidden.  On a wider
+   screen, a column of a phone's proportions, centered. */
+@media (max-width: 999.98px) {
+  body:not([data-page="view"]) #list, body[data-page="view"] #detail { display: none; }
+}
+header > *, main, #selectbar > *, .sheet-body { max-width: 720px; margin-inline: auto; }
+#sheet { justify-content: center; }
+#selectbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--bg);
+  border-top: 1px solid var(--line); padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+}
+.bar-head { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+#selectbar .names { display: none; }
+body:has(#selectbar:not([hidden])) main { padding-bottom: 140px; }
+
+/* The clock running, under the box while there is one: its task and how
+   long, a link to the task (Clock out is there). */
+#clock {
+  display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 8px 12px; border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg)); font-size: 15px; color: var(--fg); text-decoration: none;
+}
+#clock.stale { background: color-mix(in srgb, var(--c1) 22%, var(--bg)); }
+#clock .clock-task { flex: 1; min-width: 0; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#clock .clock-time { flex: none; font-variant-numeric: tabular-nums; color: var(--muted); }
+#clock.stale .clock-time { color: var(--c1); }
+.clock-badge { color: var(--accent); font-variant-numeric: tabular-nums; }
+.title .clock-badge { margin-left: 8px; font-size: 13px; }
+/* The task page's clocks, by day. */
+.section-title .clocked-total { margin-left: 8px; text-transform: none; letter-spacing: 0; }
+button[data-do=clockout] { color: var(--c1); font-weight: 600; }  /* running: it stands out */
+/* The empty sections' adders, one line: + Add under, + Note, Clock in. */
+.adders { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 12px 16px; border-top: 1px solid var(--line); }
+.adders > * { font: inherit; font-size: 15px; border: 0; background: none; color: var(--accent); padding: 0;
+  cursor: pointer; text-decoration: none; }
+.actions.menu-clock { grid-template-columns: 1fr; }
+/* Properties: name and value, a row each, tapped to change. */
+.props { padding-block: 4px 12px; }
+.prop { display: flex; gap: 12px; width: 100%; font: inherit; color: inherit; background: none; border: 0;
+  padding: 6px 0; text-align: left; cursor: pointer; }
+.prop .name { flex: none; min-width: 7em; color: var(--muted); font-size: 14px; }
+.prop .value { min-width: 0; overflow-wrap: anywhere; }
+.over { color: var(--c1); }  /* clocked past the estimate */
+#list .clocked-head { display: flex; }  /* R's section under a day or week: its total at the end */
+/* A clock report: its span between ‹ ›, then each file and its tree, a time
+   at each row's end. */
+.report-title { flex: 1; display: flex; justify-content: space-between; gap: 12px; padding: 0 8px; }
+.report-time { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 400; }
+.report-file { display: flex; align-items: center; padding: 10px 16px 4px; font-weight: 600; }
+#list .task .title:has(.report-time) { display: flex; align-items: baseline; }
+.notes.composer:has(> .note-edit[hidden]) { display: none; }  /* + Note's box, under the adders: only once opened */
+.clocks { padding-top: 4px; }
+.clock-total, .clock-entry { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+.clock-total { padding: 8px 0 2px; color: var(--muted); font-size: 14px; }
+.clock-entry { width: 100%; font: inherit; color: inherit; background: none; border: 0; border-radius: 6px;
+  padding: 8px 0; text-align: left; cursor: pointer; }
+.clock-day .clock-entry { padding-left: 12px; }  /* a day of several: under its total */
+#sheet .list button .muted { color: var(--muted); }
+/* A raised card in the theme's colors; an error tinted its red.  A tap on
+   it dismisses it; its action is a button, as Save is. */
+#toast {
+  position: fixed; left: max(16px, 50vw - 344px); right: max(16px, 50vw - 344px); top: 16px; z-index: 20;  /* top: set by toast() */
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; min-height: 40px; box-sizing: border-box;
+  background: var(--chip); color: var(--fg); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / .18); font-size: 15px; cursor: pointer;
+}
+#toast.error { background: color-mix(in srgb, var(--c1) 14%, var(--bg)); border-color: var(--c1); }
+#toast .toast-mark { color: var(--c1); }
+#toast .toast-msg { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+#toast .toast-msg .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#toast .toast-msg .id { flex: none; font: 13px ui-monospace, monospace; color: var(--c4); }
+#toast .toast-act { flex: none; font: inherit; font-weight: 600; border: 0; border-radius: 8px; padding: 6px 12px;
+  background: var(--accent); color: var(--bg); cursor: pointer; white-space: nowrap; }
+/* A choice's fast key: only in a sheet, only while the keys are in use. */
+/* Every key hint one look, a keycap: a box in the color of what it's on,
+   faded, so it reads as a key on a link, a chip or the blue Save alike. */
+kbd.fast { display: none; margin-left: 6px; }
+kbd.fast, :is(body:is(.keyboard, .hints-linger):not([data-hints=never]), body[data-hints=always]) [data-hint]::after {
+  padding: 0 4px; border: 1px solid currentColor; border-radius: 4px; text-decoration: none;
+  font: 600 11px/1.45 ui-monospace, monospace; letter-spacing: 0; text-transform: none; opacity: .6; }
+#discard kbd.fast, #sheet .sheet-buttons kbd.fast { margin: 0 6px 0 0; }
+/* While the keys are in use, or as the preferences say (body[data-hints]):
+   fast keys in sheets, and keys beside what they act on (the task page, the
+   tabs).  Save and cancel as org-capture's header line says C-c C-c and
+   C-c C-k: C-RET on what saves, ESC on what cancels a sheet or a form page
+   (a fold's Cancel on the task page has none: Esc there leaves the page). */
+:is(body:is(.keyboard, .hints-linger):not([data-hints=never]), body[data-hints=always]) {
+  & :is(#sheet, #discard) kbd.fast { display: inline; }
+  & [data-hint]::after { content: attr(data-hint); text-transform: none; }  /* a section title's uppercase would make l read L */
+  & #detail .heading[data-hint]::after { content: attr(data-hint); }  /* its key says rename: no ✎ */
+  & :is(#sheet, #detail) .sheet-buttons button.primary:not(:has(kbd))::after { content: "C-RET"; }
+  & :is(#sheet [data-a=cancel], #detail .sheet-buttons [onclick^=goBack]):not(:has(kbd))::after { content: "ESC"; }
+  & :is([data-hint], :is(#sheet, #detail) .sheet-buttons button.primary:not(:has(kbd)),
+        :is(#sheet [data-a=cancel], #detail .sheet-buttons [onclick^=goBack]):not(:has(kbd)))::after {
+    display: inline-block; margin-left: 6px; padding: 0 4px; border: 1px solid currentColor; border-radius: 4px;
+    font: 600 11px/1.45 ui-monospace, monospace; letter-spacing: 0; text-transform: none; text-decoration: none;
+    opacity: .6; vertical-align: 1px; }
+}
+/* From the keys, a focused button in a sheet or the dialog always shows it:
+   focus set by code a moment after a key (Ctrl-K's Cancel) can miss the
+   browser's focus-visible guess, and then Enter's target isn't clear. */
+.keyboard #sheet button:focus, .keyboard #discard button:focus { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
+
+#add {
+  position: fixed; right: max(16px, 50vw - 344px); bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 4;
+  width: 56px; height: 56px; border-radius: 50%; border: 0;
+  background: var(--accent); color: var(--bg); font-size: 32px; line-height: 1;
+  box-shadow: 0 3px 10px rgb(0 0 0 / .3);
+}
+body:has(#selectbar:not([hidden])) #add, body[data-page="add"] #add, body[data-page="edit"] #add { display: none; }
+.add-page #title { font: inherit; font-size: 18px; width: 100%; padding: 10px 12px; border-radius: 8px;
+  margin-bottom: 4px; }
+.add-page input:not(#title), .task-fields input { font: inherit; padding: 8px 10px; border-radius: 8px;
+  }
+.add-page #tagfilter, .add-page #newtag, .task-fields #tagfilter, .task-fields #newtag, #t-title { width: 100%; }
+#t-title { font-size: 18px; padding: 10px 12px; }
+
+/* From 1000 px: both panes, the list beside the task, each scrolling on its own. */
+@media (min-width: 1000px) {
+  /* Room for the whole name beside the tabs. */
+  .brand .full { display: inline; }
+  .brand .word { font-size: 17px; }
+  body { height: 100dvh; display: flex; flex-direction: column; padding-bottom: 0; }
+  header { position: static; flex: none; }
+  header > *, main { max-width: 1280px; }
+  main {
+    flex: 1; min-height: 0; width: 100%; padding: 0;
+    display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+  }
+  #list { grid-area: 1 / 1; }
+  #detail { grid-area: 1 / 2; }
+  /* Selecting takes the task's pane while it lasts: one set of controls. */
+  #selectbar {
+    position: static; grid-area: 1 / 2; z-index: 2; overflow-y: auto;
+    border-top: 0; padding: 16px;
+  }
+  #selectbar .names { display: block; margin: 8px 0; padding-left: 20px; color: var(--muted); }
+  body:has(#selectbar:not([hidden])) .task.current:not(.picked) { box-shadow: none; }
+  #list, #detail { overflow-y: auto; padding: 4px 0 88px; }
+  #list { border-right: 1px solid var(--line); }
+  body:has(#selectbar:not([hidden])) main { padding-bottom: 0; }
+  #detail .org-tools { top: -4px; }  /* the pane scrolls, under no header; past its 4px padding */
+  #list :is(.head, .day, .kids > .section-title), #detail .stuck-title { top: -4px; }
+  #list { scroll-padding-top: 52px; }
+  body[data-page=edit] main #detail { scroll-padding-top: 64px; }
+  /* A corner button is far from everything on a wide screen: + New sits by the box. */
+  #add { display: none; }
+  #new { display: block; }
+  body:has(#selectbar:not([hidden])) #new, body[data-page="add"] #new, body[data-page="edit"] #new { display: none; }
+  .task.current { box-shadow: inset 4px 0 0 var(--accent); }
+}
+.tag-section { padding: 8px 0 4px; }
+.tag-section + .tag-section { border-top: 1px solid var(--line); }
+.tag-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.tagchip.inherited {
+  display: inline-block; font-size: 15px; padding: 8px 12px; border-radius: 999px;
+  border: 1px dashed var(--line); color: var(--muted);
+}
+button.more { font: inherit; font-size: 14px; border: 0; background: none; color: var(--accent); padding: 6px 0; }
+#tagfilter { margin-bottom: 4px; }
+textarea.org {
+  display: block; width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 8px;
+  font: 14px/1.45 ui-monospace, "JetBrains Mono", monospace; tab-size: 2; field-sizing: content;
+}
+#entry { min-height: 50vh; }
+/* Stuck under the header while typing: field-sizing grows the box, so the page scrolls. */
+/* More tools than a phone's width: the row scrolls sideways. */
+.org-tools { position: sticky; top: var(--header-h, 0); z-index: 1; display: flex; gap: 6px;
+  padding: 8px 0 4px; background: var(--bg); overflow-x: auto; scrollbar-width: none; }
+.org-tools button { flex: none; }
+.org-tools [data-tool=code] code { font-size: 24px; line-height: 1; background: none; }  /* ~ is a speck at the others' size */
+/* The caret kept clear of the stuck tools when typing near the box's top. */
+html:has(body[data-page=edit]), body[data-page=edit] #detail { scroll-padding-top: calc(var(--header-h, 0px) + 64px); }
+.org-tools button { font: inherit; font-size: 17px; min-width: 44px; height: 40px; border-radius: 8px;
+  display: grid; place-items: center; }
+.org-tools [data-tool=list] { font-size: 28px; line-height: 1; }  /* • is small at the others' size */
+/* A gap the tools' background doesn't cover: the focus ring's top shows. */
+.org-edit textarea.org { margin-top: 6px; }
+.org-edit + .sheet-buttons, .org-edit .sheet-buttons { margin-top: 12px; }
+/* In a sheet nothing scrolls under a header: the tools sit above the box,
+   which keeps some height (field-sizing would shrink it to its lines). */
+#sheet .org-tools { position: static; }
+#sheet textarea.org { min-height: 8em; }
+details[data-part] textarea.org { margin-bottom: 4px; }
+#body { min-height: 9em; }
+
+/* One page, no list: an add token's (data-mode=add) or signing in. */
+body[data-mode] :is(#tabs, #search, #add, #list, #selectbar, .keys-hint, .keys-only) { display: none !important; }
+/* The capture page keeps the ⚙ (themes, per device), at its header row's end. */
+body[data-mode] .topbar #gear { margin-left: auto; flex: none; height: 40px; }
+body[data-mode] #detail { display: block !important; }
+body[data-mode] main { display: block; max-width: 720px; }
+@media (min-width: 1000px) { body[data-mode] #detail { overflow: visible; } }
+.whose { display: flex; flex-direction: column; font-weight: 600; line-height: 1.2; min-width: 0; }
+.whose small { font-weight: 400; font-size: 13px; color: var(--muted); }
+body[data-mode] header { padding-bottom: 8px; }
+body[data-mode] .topbar { padding-bottom: 0; gap: 12px; }
+.sent-line {
+  color: var(--c2); font-weight: 600; margin-top: 12px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;  /* a wordy title stays one line */
+}
+.capture #sent-list { margin: 8px -16px 0; }
+.capture .section-title .count { margin-left: auto; text-transform: none; letter-spacing: 0; }
+.sent-item { padding: 9px 16px; border-bottom: 1px solid var(--line); }
+.sent-item .t { overflow-wrap: anywhere; }
+.sent-item .s { font-size: 13px; color: var(--muted); }
+.sent-item .sched { color: var(--c2); font-weight: 600; }
+.sent-item .due { color: var(--c1); font-weight: 600; }
+.sent-item.done .t { color: var(--muted); }
+.sent-item.done .t::before { content: "✓ "; color: var(--c2); }
+.sent-item.new .t::after {
+  content: "just sent"; font-size: 11px; font-weight: 600; color: var(--c2); background: var(--chip);
+  border-radius: 999px; padding: 1px 7px; margin-left: 8px; vertical-align: 2px;
+}
+.capture details.older { padding: 0 16px; }
+.capture details.older .sent-item { margin: 0 -16px; }
+.signin-title { font-weight: 700; margin: 8px 0 4px; }
+.signin #key { width: 100%; font: 15px ui-monospace, "JetBrains Mono", monospace; padding: 10px 12px; border-radius: 8px;
+  margin-top: 8px; }
+
+/* The task's state: on a phone the full row; side by side one chip before
+   the title (t, then its key, either way). */
+.title-row { display: flex; align-items: baseline; gap: 10px; }
+.title-row .heading { flex: 1; min-width: 0; }
+.state-chip { display: none; flex: none; font: inherit; font-size: 15px; font-weight: 700; padding: 4px 10px;
+  border-radius: 999px; cursor: pointer; }
+@media (min-width: 1000px) {
+  .state-chip { display: inline-block; }
+  .task-fields .states { display: none; }
+}
+
+/* A date's repeater and warning, in words: org's text under Other, and the
+   timestamp it'll write on a line of its own. */
+.cookies { margin-top: 6px; }
+.cookie-block { margin-top: 16px; }
+.cookies .chips { margin: 8px 0; }
+.cookies .rep-says, .cookies .warn-says { margin: 4px 0 0; }
+.cookies .every-line { display: flex; align-items: center; gap: 10px; color: var(--muted); margin: 8px 0; }
+#sheet .cookies .every-line select { flex: 1; width: auto; max-width: 12em; height: 40px; margin: 0; }
+/* − n +: chip-sized steps; the browser's own spinners gone. */
+.stepper-num { display: inline-flex; align-items: center; gap: 4px; }
+.stepper-num button { width: 40px; height: 40px; border-radius: 999px; font: inherit; font-size: 20px; line-height: 1;
+  border: 1px solid var(--line); background: var(--chip); color: var(--fg); cursor: pointer; }
+#sheet .stepper-num input { width: 3.4em; flex: none; height: 40px; margin: 0; padding: 0 4px; text-align: center;
+  -moz-appearance: textfield; appearance: textfield; }
+.cookies .every-line > span:last-child { white-space: nowrap; }
+.stepper-num input::-webkit-inner-spin-button, .stepper-num input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.cookies.custom :is(#p-rep, .rep-every, .warn-row) { opacity: .45; pointer-events: none; }
+.cookies .org-writes { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--line); }
+.cookies .org-writes code { font: 13px ui-monospace, monospace; color: var(--fg); }
+.cookies details.other > summary { color: var(--muted); cursor: pointer; margin-top: 6px; font-size: 14px; }
+.cookies details.other input { margin-top: 6px; width: 100%; box-sizing: border-box; }
+
+/* The text as org renders it: its own markup, in the theme's colors. */
+.rendered { line-height: 1.55; overflow-wrap: anywhere; }
+.rendered > :first-child { margin-top: 0; }
+.rendered p { margin: 0 0 .7em; }
+.rendered :is(ul, ol) { margin: 0 0 .7em; padding-left: 1.4em; }
+.rendered li { margin: .15em 0; }
+/* A checklist: the boxes stand in for bullets; nested ones indent under theirs. */
+.rendered li:is(.on, .off, .trans) { list-style: none; margin-left: -1.4em; }
+.rendered li:is(.on, .off, .trans) > :is(ul, ol) { padding-left: 2.8em; }
+.rendered button.checkbox { font: inherit; font-size: 1.15em; line-height: 1; color: var(--accent); background: none;
+  border: 0; padding: 4px 6px 4px 0; margin: -4px 0; cursor: pointer; }
+.rendered li.on { color: var(--muted); }
+.rendered li.on > button.checkbox { color: var(--c2); }
+.rendered a { color: var(--accent); }
+.rendered code { font: .9em ui-monospace, monospace; background: var(--chip); border-radius: 4px; padding: .05em .3em; }
+.rendered pre { margin: 0 0 .8em; padding: 10px 12px; background: var(--chip); border: 1px solid var(--line);
+  border-radius: 8px; overflow-x: auto; line-height: 1.45; }
+.rendered pre code { background: none; padding: 0; font-size: 13px; }
+.rendered blockquote { margin: 0 0 .7em; padding-left: 12px; border-left: 3px solid var(--line); color: var(--muted); }
+.rendered :is(h1, h2, h3, h4, h5, h6) { font-size: 1em; margin: .9em 0 .4em; }
+.rendered table { border-collapse: collapse; margin: 0 0 .8em; display: block; max-width: 100%; overflow-x: auto; }
+.rendered :is(th, td) { border: 1px solid var(--line); padding: 4px 10px; text-align: left; }
+.rendered th { background: var(--chip); font-weight: 600; }
+.rendered :is(th, td).org-right { text-align: right; }
+.rendered :is(th, td).org-center { text-align: center; }
+.rendered hr { border: 0; border-top: 1px solid var(--line); margin: 1em 0; }
+/* A long text: its start, the rest a tap away. */
+.rendered.clipped { max-height: 480px; overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 64px), transparent); }
+/* Source blocks: htmlize's face names, in the theme's ANSI colors. */
+.rendered :is(.org-keyword, .org-builtin, .org-preprocessor) { color: var(--c5); }
+.rendered :is(.org-string, .org-doc) { color: var(--c2); }
+.rendered :is(.org-comment, .org-comment-delimiter) { color: var(--muted); font-style: italic; }
+.rendered :is(.org-function-name, .org-function-call) { color: var(--c4); }
+.rendered :is(.org-variable-name, .org-property-name) { color: var(--c6); }
+.rendered :is(.org-type, .org-constant, .org-number) { color: var(--c3); }
+.rendered :is(.org-warning, .org-negation-char, .org-escape) { color: var(--c1); }
+/* The read page: the text alone, a comfortable measure. */
+.read-page { max-width: 72ch; margin: 0 auto; padding: 0 16px 48px; }
+.read-bar { display: flex; justify-content: space-between; align-items: center; }
+.read-bar .back { padding-left: 0; }
+.read-bar [data-do=edit] { font: inherit; border: 0; background: none; color: var(--accent); cursor: pointer; padding: 12px 0 0; }
+.read-title { font-size: 24px; line-height: 1.25; margin: 12px 0 16px; }
+.rendered.read { font-size: 17px; }
+.section-title [data-do=read] { margin-left: auto; font-size: 16px; }
+.section-title [data-do=read] + [data-do=edit] { margin-left: 16px; }
+/* Reading and editing take the whole width side by side: the list set aside. */
+@media (min-width: 1000px) {
+  body:is([data-page=edit], [data-page=read]) #list { display: none; }
+  body:is([data-page=edit], [data-page=read]) #detail { grid-column: 1 / -1; }
+  body[data-page=edit] #detail > * { max-width: 960px; margin-inline: auto; }
+}

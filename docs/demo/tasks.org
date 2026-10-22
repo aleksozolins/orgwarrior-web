@@ -1,0 +1,73 @@
+#+title: Tasks
+
+* Tasks
+** NEXT Renew passport :@errand:
+SCHEDULED: <{{0}}> DEADLINE: <{{+40}}>
+Bring the old one and two photos. The office opens at 9.
+** TODO [#A] Pay rent [1/2] :finances:
+DEADLINE: <{{+2}}>
+- [X] Check the amount on the lease
+- [ ] Transfer from *checking*
+** NEXT Write the quarterly report :@computer:
+SCHEDULED: <{{0}} 14:00-15:30>
+:PROPERTIES:
+:Effort:   1:30
+:END:
+:LOGBOOK:
+- Note taken on [{{-1}} 16:02] \\
+  The sales sheet is final now; Q3 is the one to explain.
+CLOCK: [{{0}} 09:10]--[{{0}} 10:05] =>  0:55
+CLOCK: [{{-1}} 15:00]--[{{-1}} 15:40] =>  0:40
+:END:
+Numbers from the sales sheet, then the summary.
+
+| Quarter | Revenue | Growth |
+|---------+---------+--------|
+| Q2      |   41.2k |    +6% |
+| Q3      |   45.9k |   +11% |
+** WAIT Package from Grandma :family:
+SCHEDULED: <{{0}}>
+:LOGBOOK:
+- State "WAIT"       from "TODO"       [{{-2}} 18:30] \\
+  She sent it Tuesday; tracking says Thursday.
+:END:
+** TODO Book flights to Lisbon :travel:
+SCHEDULED: <{{+1}}>
+:LOGBOOK:
+CLOCK: [{{-1}} 20:10]--[{{-1}} 20:45] =>  0:35
+:END:
+Compare [[https://example.org/flights][the fare tracker]] before booking.
+- Morning flights only
+- Window seat
+** TODO Call the bank about the new card :@phone:
+** TODO Water the plants :@home:
+SCHEDULED: <{{0}} .+3d>
+:PROPERTIES:
+:STYLE:    habit
+:LAST_REPEAT: [{{-3}} 08:00]
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [{{-3}} 08:00]
+- State "DONE"       from "TODO"       [{{-6}} 08:10]
+- State "DONE"       from "TODO"       [{{-9}} 07:55]
+- State "DONE"       from "TODO"       [{{-13}} 08:30]
+- State "DONE"       from "TODO"       [{{-16}} 08:05]
+- State "DONE"       from "TODO"       [{{-19}} 08:00]
+:END:
+** TODO Run 5k :health:
+SCHEDULED: <{{0}} .+2d/3d>
+:PROPERTIES:
+:STYLE:    habit
+:LAST_REPEAT: [{{-2}} 07:00]
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [{{-2}} 07:00]
+- State "DONE"       from "TODO"       [{{-4}} 07:10]
+- State "DONE"       from "TODO"       [{{-7}} 06:55]
+- State "DONE"       from "TODO"       [{{-9}} 07:05]
+- State "DONE"       from "TODO"       [{{-12}} 07:00]
+- State "DONE"       from "TODO"       [{{-14}} 07:20]
+- State "DONE"       from "TODO"       [{{-17}} 07:00]
+:END:
+** DONE Return the library books
+CLOSED: [{{-1}} 17:20]

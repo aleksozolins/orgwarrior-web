@@ -1,0 +1,12 @@
+#+title: Calendar
+
+* Events
+** Dinner with Sam and Alex
+<{{0}} 19:00-21:00>
+** Dentist
+<{{+2}} 10:30>
+** Book club
+<{{+4}} 18:30 +2w>
+* Birthdays
+** Mom's birthday
+<{{+6}} +1y>

@@ -1,0 +1,28 @@
+#+title: Projects
+
+* Kitchen renovation [1/4]
+** DONE Pick the tiles
+CLOSED: [{{-5}} 11:00]
+** NEXT Get quotes from three contractors :@phone:
+DEADLINE: <{{+5}}>
+:LOGBOOK:
+CLOCK: [{{-1}} 12:30]--[{{-1}} 12:50] =>  0:20
+:END:
+** TODO Order the cabinets
+*** TODO Measure the walls :@home:
+*** TODO Pick a finish
+** TODO Book the electrician
+* Learn Rust [0/2]
+** NEXT Chapter 9: error handling :@computer:
+SCHEDULED: <{{+1}}>
+:PROPERTIES:
+:Effort:   2:00
+:END:
+:LOGBOOK:
+CLOCK: [{{-2}} 19:00]--[{{-2}} 20:10] =>  1:10
+:END:
+** TODO Build a small CLI to practice
+* Garden [0/2]
+** TODO Plant the bulbs before the frost :@home:
+SCHEDULED: <{{+3}}>
+** TODO Fix the gate latch :@home:

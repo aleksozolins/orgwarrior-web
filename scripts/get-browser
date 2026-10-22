@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Fetch a headless Chrome for the browser tests (tests/test_browser.py) into
+# ~/.cache/orgwarrior-web/browser, or $ORGWARRIOR_WEB_BROWSER.  Nothing is
+# installed: Chrome for Testing is unpacked there, and the shared libraries
+# it needs that the system lacks (X11 and accessibility ones on a machine
+# without a desktop) are unpacked from Arch's packages into lib/ next to it.
+# Elsewhere it lists what's missing.  Remove the directory to undo.
+set -euo pipefail
+version=155.0.8059.79
+dir="${ORGWARRIOR_WEB_BROWSER:-${XDG_CACHE_HOME:-$HOME/.cache}/orgwarrior-web/browser}"
+chrome="$dir/chrome-headless-shell-linux64/chrome-headless-shell"
+
+mkdir -p "$dir"
+if [[ ! -x "$chrome" ]]; then
+  curl -sSfL -o "$dir/chrome.zip" \
+    "https://storage.googleapis.com/chrome-for-testing-public/$version/linux64/chrome-headless-shell-linux64.zip"
+  unzip -q -o "$dir/chrome.zip" -d "$dir"
+  rm "$dir/chrome.zip"
+fi
+
+missing() { LD_LIBRARY_PATH="$dir/lib" ldd "$chrome" | awk '/not found/ {print $1}'; }
+# The Arch package each library comes from.
+declare -A package=(
+  [libatk-1.0.so.0]=at-spi2-core [libatk-bridge-2.0.so.0]=at-spi2-core [libatspi.so.0]=at-spi2-core
+  [libXcomposite.so.1]=libxcomposite [libXdamage.so.1]=libxdamage [libXrandr.so.2]=libxrandr
+  [libxkbcommon.so.0]=libxkbcommon [libXi.so.6]=libxi)
+# Rounds: a library's own dependencies only show up as missing once it's there.
+fetched=" "
+while mapfile -t libs < <(missing) && (( ${#libs[@]} )); do
+  if ! command -v pacman >/dev/null; then
+    echo "Chrome needs these libraries, which this system lacks: ${libs[*]}" >&2
+    exit 1
+  fi
+  mirror=$(sed -n 's/^Server = //p' /etc/pacman.d/mirrorlist | head -1)
+  mkdir -p "$dir/lib"
+  for pkg in $(for l in "${libs[@]}"; do echo "${package[$l]:?no package known for $l}"; done | sort -u); do
+    [[ "$fetched" == *" $pkg "* ]] && { echo "Still missing after $pkg: ${libs[*]}" >&2; exit 1; }
+    fetched+="$pkg "
+    read -r repo ver arch < <(pacman -Si "$pkg" | awk '/^Repository/ {r=$3} /^Version/ {v=$3}
+                                                       /^Architecture/ {a=$3} END {print r, v, a}')
+    url=$(echo "$mirror" | sed "s/\$repo/$repo/; s/\$arch/$arch/")/$pkg-$ver-$arch.pkg.tar.zst
+    curl -sSfL "$url" | tar --zstd -x -C "$dir/lib" --strip-components=2 --wildcards 'usr/lib/*.so*'
+  done
+done
+LD_LIBRARY_PATH="$dir/lib" "$chrome" --version

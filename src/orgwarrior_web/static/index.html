@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0e1c">
+<title>orgwarrior</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="view">
+<header>
+  <div class="topbar"><a class="brand" href="#/v/" title="orgwarrior" aria-label="Home" tabindex="-1"><svg viewBox="0 0 96 96" aria-hidden="true"><path class="bracket" d="M31 24H22V72H31M65 24H74V72H65"/><path class="check" d="M35 49l9 9 18-20"/></svg><span class="word"><span class="org">o<span class="full">rg</span></span><span class="warrior">w<span class="full">arrior</span></span></span></a><nav id="tabs"></nav></div>
+  <form id="search" autocomplete="off">
+    <input id="q" type="search" placeholder="fri, +@phone, add Buy milk, 8a done…" enterkeyhint="go"
+           autocapitalize="off" spellcheck="false">
+    <button id="new" type="button" data-hint-for="add">+ New</button>
+    <button id="reload" type="button" aria-label="Reload" data-hint-for="refresh">↻</button>
+    <button id="gear" type="button" aria-label="Settings" aria-expanded="false" data-hint-for="preferences">⚙</button>
+  </form>
+  <a id="clock" href="#/v/" tabindex="-1" hidden><span class="clock-task"></span><span class="clock-time"></span></a>
+  <div id="settings" hidden>
+    <div class="setting-title">Theme</div>
+    <div id="themes" role="radiogroup" aria-label="Theme">
+      <button type="button" data-family="modus">Modus</button>
+      <button type="button" data-family="gruvbox">Gruvbox</button>
+      <button type="button" data-family="solarized">Solarized</button>
+      <button type="button" data-family="dracula">Dracula</button>
+      <button type="button" data-family="nord">Nord</button>
+    </div>
+    <div id="modes" role="radiogroup" aria-label="Light or dark"></div>
+    <div class="setting-title clocked-title">Under a day or week</div>
+    <div id="clockreport" role="radiogroup" aria-label="Under a day's or week's agenda">
+      <button type="button" data-cr="off">Nothing</button>
+      <button type="button" data-cr="on" data-hint-for="clock-report">What was clocked</button>
+    </div>
+    <div class="keys-only">
+      <div class="setting-title">Key hints</div>
+      <div id="hints" role="radiogroup" aria-label="Key hints">
+        <button type="button" data-hints="typing">When typing</button>
+        <button type="button" data-hints="always">Always</button>
+        <button type="button" data-hints="never">Never</button>
+      </div>
+    </div>
+    <div class="keys-hint">With a keyboard, <kbd>?</kbd> lists the shortcuts.</div>
+  </div>
+</header>
+<main id="main"><section id="list"></section><section id="detail"></section>
+<div id="selectbar" hidden>
+  <div class="bar-head"><span class="count"></span><button data-a="cancel">Cancel</button></div>
+  <ul class="names"></ul>
+  <div class="actions">
+    <button data-do="pri">Priority</button><button data-do="sched">Schedule</button><button data-do="due">Deadline</button>
+    <button data-do="tags">Tags</button><button data-do="note">Note</button><button data-do="refile">Refile</button>
+    <button data-do="states">State</button><button data-do="archive">Archive</button>
+    <button data-do="kill" class="danger">Kill</button>
+  </div>
+</div></main>
+<button id="add" type="button" aria-label="New task">+</button>
+<div id="sheet" hidden></div>
+<dialog id="discard"><form method="dialog">
+  <p>Discard changes?</p>
+  <div class="sheet-buttons"><button value="keep"><kbd class="fast">n</kbd>Keep editing</button>
+  <button value="discard" class="primary danger"><kbd class="fast">y</kbd>Discard</button></div>
+</form></dialog>
+<div id="toast" hidden></div>
+<div id="keyseq" hidden aria-live="polite"></div>
+<script src="app.js"></script>
+<script src="prefs.js"></script>
+<script src="sheets.js"></script>
+<script src="actions.js"></script>
+<script src="taskpage.js"></script>
+<script src="forms.js"></script>
+<script src="draft.js"></script>
+<script src="keys.js"></script>
+</body>
+</html>
