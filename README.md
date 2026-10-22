@@ -1,12 +1,12 @@
-<h1><img src="src/orgwarrior_web/static/icon.svg" alt="" width="44" align="top"> orgwarrior-web</h1>
+<h1><img src="https://raw.githubusercontent.com/aleksozolins/orgwarrior-web/main/src/orgwarrior_web/static/icon.svg" alt="" width="44" align="top"> orgwarrior-web</h1>
 
 **A porcelain for Org's agenda, in your browser, phone first.** A small
 web page over [orgwarrior](https://github.com/aleksozolins/orgwarrior)'s
 engine: Org stays the source of truth, and your running Emacs does all the
 Org work.
 
-<p align="center"><img src="docs/screenshots/phones.png" alt="orgwarrior-web on a phone: today's agenda with habits and a running clock, a task with its states, fields and checklist, and the add page" width="900"></p>
-<p align="center"><img src="docs/screenshots/desktop.png" alt="orgwarrior-web on a desktop: today's agenda beside an open task, its details rendered as Org exports them, with a table and its clocks" width="900"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/aleksozolins/orgwarrior-web/main/docs/screenshots/phones.png" alt="orgwarrior-web on a phone: today's agenda with habits and a running clock, a task with its states, fields and checklist, and the add page" width="900"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/aleksozolins/orgwarrior-web/main/docs/screenshots/desktop.png" alt="orgwarrior-web on a desktop: today's agenda beside an open task, its details rendered as Org exports them, with a table and its clocks" width="900"></p>
 
 - **Your agenda, as Org builds it**: your views, TODO keywords, tags,
   habits (with their consistency graphs) and time grid; tabs for the views
@@ -67,7 +67,7 @@ signing in until you make the first token.
    above: `orgwarrior` in a terminal shows today's agenda.
 2. A certificate for `10.0.0.5`, since a phone installs the page as an
    app only over HTTPS: a few lines of openssl in
-   [docs/phone.md](docs/phone.md), then its `ca.crt` installed on the
+   [docs/phone.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/phone.md), then its `ca.crt` installed on the
    phone.
 3. A token for the phone: `orgwarrior-web token add phone --url
    https://10.0.0.5:22546` prints its link ([signing in](#signing-in)).
@@ -75,7 +75,7 @@ signing in until you make the first token.
    --cert … --key …`, [as a service](#running-it-as-a-service) to keep it
    running.
 5. On the phone, the link opened once, then the page installed as an app
-   ([docs/phone.md](docs/phone.md)).
+   ([docs/phone.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/phone.md)).
 
 Update with `uv tool upgrade orgwarrior-web` (both commands come along).
 If you installed orgwarrior on its own first, `uv tool uninstall
@@ -85,7 +85,7 @@ that instead: it carries both.
 
 ## A tour
 
-<p align="center"><img src="docs/screenshots/desktop-keys.png" alt="The desktop page in dark mode with the keyboard in use: a cursor on a row and every control showing its key" width="900"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/aleksozolins/orgwarrior-web/main/docs/screenshots/desktop-keys.png" alt="The desktop page in dark mode with the keyboard in use: a cursor on a row and every control showing its key" width="900"></p>
 
 - **Views**: tabs for the views you use, and any `orgwarrior` query in
   the box: `wait`, `+@phone`, `fri`, `next +@phone`, a file's outline
@@ -222,7 +222,7 @@ adding to it), browsers want HTTPS: a Chrome flag for a plain-HTTP
 address, a certificate of your own for the server's IP address (a small
 CA you trust on each device, made with openssl in a few lines), or a
 reverse proxy you already run. All three, step by step, and installing on
-Android and iPhone: [docs/phone.md](docs/phone.md).
+Android and iPhone: [docs/phone.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/phone.md).
 
 ## Calendar feed
 
@@ -236,7 +236,7 @@ orgwarrior-web token add calendar --calendar --url https://10.0.0.5:22546
 ```
 
 Subscribing from Android, iPhone and desktop apps, and its options
-(`[web.calendar]`): [docs/calendar.md](docs/calendar.md).
+(`[web.calendar]`): [docs/calendar.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/calendar.md).
 
 ## A second instance
 
@@ -271,7 +271,7 @@ archive = []               # none
 ```
 
 `?` on the page lists every key in effect. Every action, the syntax, the
-evil preset and where org's keys differ: [docs/keys.md](docs/keys.md).
+evil preset and where org's keys differ: [docs/keys.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/keys.md).
 
 ## Running it as a service
 
@@ -336,4 +336,4 @@ by me, and every behavior is covered by real tests.
 
 ## License
 
-[GPL-3.0-or-later](LICENSE), as Emacs and Org are.
+[GPL-3.0-or-later](https://github.com/aleksozolins/orgwarrior-web/blob/main/LICENSE), as Emacs and Org are.
