@@ -379,14 +379,20 @@ routes the page (`#/v/QUERY`, `#/v/FILE::ID` a zoom, `#/t/ID`, `#/e/ID`,
 `#/r/ID`, `#/add?…`), so Android's Back works.
 
 ## Published
-- **Installed from GitHub with uv**, one install for both commands
-  (`--no-sources --with-executables-from orgwarrior`). The dependency is
-  orgwarrior's GitHub URL and `[tool.uv.sources]` keeps `../orgwarrior`
-  for development; uv applies a project's sources even installing it
-  from git (a missing path: the build fails), so the line says
-  `--no-sources`, and the install receipt keeps it for `uv tool upgrade`
-  (which takes the newest commits of both). One install, not two: see
-  orgwarrior's engine stamp.
+- **Installed three ways**: Homebrew (aleksozolins/homebrew-tap, one
+  `orgwarrior` formula with both packages: two formulae can't share a
+  Python package), the AUR (`orgwarrior-web` depending on `orgwarrior`,
+  system site-packages), pipx or uv from PyPI. The dependency is plain
+  `orgwarrior>=0.1.0` (PyPI refuses git URLs); `[tool.uv.sources]` keeps
+  `../orgwarrior` for development and isn't published. The package
+  declares orgwarrior's entry point too, so one pipx or uv install gives
+  both commands, one engine copy (see orgwarrior's engine stamp).
+- **Published** by `.github/workflows/publish.yml` on a `v*` tag, trusted
+  publishing (PyPI trusts that workflow in the `pypi` environment; no
+  token anywhere), the tag checked against the version. By hand too
+  (`gh workflow run publish.yml --ref vX.Y.Z`): the recreated repos'
+  pushes once started no workflows. CI (`ci.yml`): the suite on Emacs
+  29.4 and 31.1.
 - **GPL-3.0-or-later**, both.
 - **The READMEs** (complete, not walls of text): what it is with
   screenshots first, a quick start, a tour, the config table, sign-in;

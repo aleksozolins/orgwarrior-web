@@ -46,14 +46,16 @@ server reads or writes your Org files itself.
 ## Quick start
 
 You need **Emacs 29 or later running as a daemon** (`emacs --daemon`, or
-your system's Emacs service) and
-**[uv](https://docs.astral.sh/uv/getting-started/installation/)**, which
-installs it, and a Python 3.11+ of its own if yours is older. One install
-gives both the page and the `orgwarrior` command:
+your system's Emacs service). Then one of these, each giving both the page
+and the `orgwarrior` command:
 
 ```sh
-uv tool install --no-sources --with-executables-from orgwarrior \
-  git+https://github.com/aleksozolins/orgwarrior-web
+brew install aleksozolins/tap/orgwarrior   # macOS or Linux, with Homebrew
+yay -S orgwarrior-web                      # Arch, from the AUR (any AUR helper)
+pipx install orgwarrior-web                # anywhere with Python 3.11+ (or: uv tool install orgwarrior-web)
+```
+
+```sh
 orgwarrior-web              # http://127.0.0.1:22546/
 ```
 
@@ -77,9 +79,10 @@ signing in until you make the first token.
 5. On the phone, the link opened once, then the page installed as an app
    ([docs/phone.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/phone.md)).
 
-Update with `uv tool upgrade orgwarrior-web` (both commands come along).
-If you installed orgwarrior on its own first, `uv tool uninstall
-orgwarrior` before: the one install carries it. With
+Update as you installed it (`brew upgrade`, your AUR helper, `pipx upgrade
+orgwarrior-web`); both commands come along. With pipx or uv, if you
+installed orgwarrior on its own first, uninstall it before: this carries
+it, one copy of the engine. With
 [orgwarrior-mcp](https://github.com/aleksozolins/orgwarrior-mcp), install
 that instead: it carries both.
 
@@ -284,7 +287,7 @@ After=emacs.service
 Wants=emacs.service
 
 [Service]
-ExecStart=%h/.local/bin/orgwarrior-web --host 10.0.0.5 --cert %h/.local/share/orgwarrior-web/tls/server.crt --key %h/.local/share/orgwarrior-web/tls/server.key
+ExecStart=/usr/bin/orgwarrior-web --host 10.0.0.5 --cert %h/.local/share/orgwarrior-web/tls/server.crt --key %h/.local/share/orgwarrior-web/tls/server.key
 Restart=on-failure
 
 [Install]
@@ -296,6 +299,8 @@ systemctl --user enable --now orgwarrior-web
 loginctl enable-linger "$USER"   # keep it (and Emacs) running when you're logged out
 ```
 
+`ExecStart` takes the command's full path: `command -v orgwarrior-web`
+prints it (`~/.local/bin/` for pipx and uv, written `%h/.local/bin/` here).
 `emacs.service` is the user unit Emacs ships; with a daemon started some
 other way, drop those two lines. On macOS, a launch agent does the same
 (`launchctl`), Homebrew's `emacsclient` on its `PATH`.
@@ -320,8 +325,8 @@ scripts/screenshots      # every README screenshot, from docs/demo's made-up org
 ```
 
 The two checkouts sit side by side: orgwarrior-web takes orgwarrior from
-`../orgwarrior` for development (`[tool.uv.sources]`), from GitHub for an
-install from GitHub (`--no-sources`).
+`../orgwarrior` for development (`[tool.uv.sources]`), from PyPI when
+installed.
 
 `scripts/dev-web` starts orgwarrior's sandbox daemon if it isn't running
 (`../orgwarrior/scripts/dev-daemon`, or `ORGWARRIOR_REPO`) and serves the
