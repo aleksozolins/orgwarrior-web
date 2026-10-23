@@ -201,4 +201,31 @@ await run(async t => {
   await go("#/v/all");
   await expect("the new task is there", s => s.main.includes("Buy milk"));
   await go(task);
+
+  // An event: its date a field, When, never Details' text, and no Schedule
+  // or Deadline; in the editor a fold of its own, saved back where it was.
+  await go("#/v/today");
+  await page.waitForSelector(".task[data-id]");
+  const appt = await idOf("Dentist appointment");
+  await go(`#/t/${appt}`);
+  await page.waitForSelector("#detail .task-fields [data-do=when]");
+  await go(`#/e/${appt}`);
+  await page.waitForSelector("#entry");
+  const stamp = (await taskOf(appt)).when;
+  await check("the editor: When folded apart, the text box empty",
+    await page.$$eval("#detail details.fold", (fs, w) => fs.length === 1 && fs[0].querySelector("summary").textContent.startsWith("When")
+      && fs[0].querySelector("textarea").value === w, stamp) && (await entryValue()) === "");
+  await typeInto("#entry", "At the clinic");
+  await tap("[data-a=save]");
+  await expect("saved", s => !s.dialog && s.hash === `#/t/${appt}` && s.main.includes("clinic"));
+  if ((await taskOf(appt)).body !== `${stamp}\nAt the clinic`) fail("saved:", JSON.stringify((await taskOf(appt)).body));
+  await check("an event: When, no Schedule or Deadline, Details without the date",
+    /^When /.test(await field("when")) && !(await page.$("#detail .task-fields [data-do=sched], #detail .task-fields [data-do=due]"))
+      && await page.$eval("#detail .rendered", r => r.textContent.trim() === "At the clinic"));
+  await tap("#detail [data-do=when]");
+  await tap("#sheet [data-d=tomorrow]");
+  const tomorrow = new Date(Date.now() + 864e5).toLocaleDateString("sv-SE");
+  await page.waitForFunction(d => document.querySelector("#detail .task-fields [data-do=when]")?.textContent.includes(d), {timeout: 5000}, tomorrow);
+  await check("When moved the date, the text kept",
+    new RegExp(`^<${tomorrow} [^ >]+>\\nAt the clinic$`).test((await taskOf(appt)).body));
 });

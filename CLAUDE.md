@@ -243,7 +243,12 @@ file, never committed, holds the maintainer's deployment and to-do.
   Effort alone is a field, the one property the page gives meaning to
   (clocked time against it). Sections show only once they hold something.
 - Details never shows the planning line (the fields have its dates;
-  CLOSED is read only: org sets it on a done state). The tags sheet:
+  CLOSED is read only: org sets it on a done state), nor an event's date:
+  show's `when`, the plain timestamp alone on the line under the drawers
+  (where add event writes it; one further down is text), is the When
+  field (`>`, org agenda's change-date key; the `when` verb), its own fold
+  in the editor, put back at the body's start. A heading with no keyword
+  offers + When; an event no Schedule or Deadline (it would show twice). The tags sheet:
   inherited ones shown, not settable; each `{ }` group one of; filetags
   never offered.
 - Each section with a list has a key that lists it as a sheet: History

@@ -243,7 +243,7 @@ async function clockKey(action) {
 }
 
 // The actions run as the task page's controls are (act): action → its verb.
-const VERBS = {state: "states", priority: "pri", tags: "tags", note: "note", schedule: "sched", deadline: "due",
+const VERBS = {state: "states", priority: "pri", tags: "tags", note: "note", schedule: "sched", deadline: "due", when: "when",
                refile: "refile", archive: "archive", rename: "rename", move: "move", kill: "kill",
                "move-down": "down", "move-up": "up", promote: "promote", demote: "demote"};
 

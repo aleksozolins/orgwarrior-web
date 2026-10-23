@@ -104,6 +104,7 @@ view), `f` `F` (filter by tag, filters off), `S-RET` `g o` (open a link),
 | `tags` | `:` | `T` | tags |
 | `schedule` | `s` | `s` | schedule |
 | `deadline` | `d` | `D` | deadline |
+| `when` | `>` | `>` | an event's date (its plain timestamp) |
 | `effort` | `E` | `E` | effort: the estimate, clocked time shown against it |
 | `note` | `z` | `n` | add a note |
 | `history` | `Z` | – | its notes and history: change or delete one |

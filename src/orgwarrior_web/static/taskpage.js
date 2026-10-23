@@ -104,7 +104,7 @@ async function showRead(id, quiet) {
 
 // The entry's body (LINES, the task's lines after the heading) with each drawer
 // (:LOGBOOK:, :PROPERTIES:, ...) folded to one line, as org shows it; tap to open.
-// Never the planning line: the fields above show its dates, CLOSED too.
+// Never the planning line or an event's date: the fields above show them.
 // Past CLIP lines (a drawer one), the first SHOWN, the rest behind "Show all".
 // DRAWERS: only the drawers, the body being drawn rendered instead.
 function foldDrawers(lines, task, drawersOnly = false) {
@@ -113,6 +113,7 @@ function foldDrawers(lines, task, drawersOnly = false) {
   const boxes = new Map(task.checkboxes.map((b, i) => [b.line, {n: i + 1, text: b.text}]));
   for (const [i, l] of lines.entries()) {
     if (i === 0 && /^(SCHEDULED|DEADLINE|CLOSED):/.test(l.text.trim())) continue;
+    if (i + 1 === task.when_line) continue;  // the When field's
     const t = l.text.trim(),
       text = painted(l.text, l.spans, 0, undefined, {links: l.links, box: boxes.get(i + 1)});
     if (!drawer && /^:[\w-]+:$/.test(t) && t !== ":END:") {
@@ -169,11 +170,14 @@ function titleHtml(heading) {
 
 // The title (tap to rename), the state, then the fields: what's set, each
 // a link to its sheet (the one its key opens), and what isn't, as adders.
+// An event's date (show's when) is a field: offered on a plain heading, and
+// on an event no Schedule or Deadline (it would show in the agenda twice).
 function taskFieldsHtml(task, heading) {
-  const stamp = t => esc(t.replace(/^<|>$/g, ""));
+  const stamp = t => esc(t.replace(/^<|>$/g, "")), event = task.when && !task.keyword;
   const fields = [["pri", "priority", "Priority", "+ Priority", task.priority && esc(task.priority)],
-    ["sched", "schedule", "Scheduled", "+ Schedule", task.scheduled && stamp(task.scheduled)],
-    ["due", "deadline", "Deadline", "+ Deadline", task.deadline && stamp(task.deadline)],
+    ...(task.when || !task.keyword ? [["when", "when", "When", "+ When", task.when && stamp(task.when)]] : []),
+    ...(event && !task.scheduled ? [] : [["sched", "schedule", "Scheduled", "+ Schedule", task.scheduled && stamp(task.scheduled)]]),
+    ...(event && !task.deadline ? [] : [["due", "deadline", "Deadline", "+ Deadline", task.deadline && stamp(task.deadline)]]),
     ["effort", "effort", "Effort", "+ Effort", task.effort && esc(task.effort)],
     ["tags", "tags", "Tags", "+ Tags", task.tags.length && task.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("")]];
   const set = fields.filter(f => f[4]).map(([verb, action, label, , value]) =>

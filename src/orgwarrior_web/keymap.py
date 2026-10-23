@@ -54,6 +54,7 @@ ACTIONS = [
     _a("tags", "The task", [":"], "tags"),
     _a("schedule", "The task", ["s"], "schedule"),
     _a("deadline", "The task", ["d"], "deadline"),
+    _a("when", "The task", [">"], "an event's date (its plain timestamp)"),
     _a("effort", "The task", ["E"], "effort: the estimate, clocked time shown against it"),
     _a("note", "The task", ["z"], "add a note"),
     _a("history", "The task", ["Z"], "its notes and history: change or delete one"),

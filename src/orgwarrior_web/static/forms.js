@@ -406,7 +406,7 @@ function showSignIn() {
 async function showEdit(id) {
   const h = location.hash, task = await api(`/api/task/${encodeURIComponent(id)}`), [heading] = task.lines;
   if (location.hash !== h) return;
-  const {parts, gap, body} = splitEntry(task.body);
+  const {parts, gap, body} = splitEntry(task.body, task.when_line);
   detail.innerHTML = `<button class="back" onclick="goBack()" data-hint="ESC">‹ Back</button>
     <div class="detail">
      <pre class="heading">${painted(heading.text, heading.spans)}</pre>
@@ -423,10 +423,13 @@ async function showEdit(id) {
   pageForm = {hash: location.hash, state: formState(detail)};
   if (keyboardOn()) detail.querySelector("#entry").focus();  // e: typing at once
   // The parts back in their order; an emptied one goes (a drawer removed).
+  // An event's date opens the body (the engine lays out drawers, a blank
+  // line, the rest), its blank lines below it kept.
   const joined = () => {
-    const front = parts.map((_, i) => detail.querySelector(`[data-part="${i}"] textarea`).value.replace(/\s+$/, ""))
-      .filter(Boolean).join("\n");
-    const text = detail.querySelector("#entry").value;
+    const value = i => detail.querySelector(`[data-part="${i}"] textarea`).value.replace(/\s+$/, "");
+    const front = parts.map((p, i) => p.when ? "" : value(i)).filter(Boolean).join("\n");
+    const w = parts.findIndex(p => p.when), entry = detail.querySelector("#entry").value;
+    const text = w < 0 || !value(w).trim() ? entry : entry ? `${value(w)}\n${parts[w].gap}${entry}` : value(w);
     return !front ? text : text ? `${front}\n${gap || "\n"}${text}` : front;
   };
   detail.onclick = async e => {
@@ -447,10 +450,11 @@ async function showEdit(id) {
 }
 
 // The planning line and the drawers right below the heading, each a part of
-// its own, and the body after them: org fixes that order, so they split
-// cleanly.  A drawer further down stays in the body.  GAP is the blank
-// lines between, kept as they were.
-function splitEntry(text) {
+// its own, then an event's date (WHEN_LINE, show's: its index in the lines
+// from the heading), and the body after them: org fixes that order, so they
+// split cleanly.  A drawer further down stays in the body.  GAP is the
+// blank lines between, kept as they were; a When part's own, those under it.
+function splitEntry(text, whenLine = null) {
   const lines = text.split("\n"), parts = [];
   let i = 0;
   if (/^\s*(SCHEDULED|DEADLINE|CLOSED):/.test(lines[0]))
@@ -461,7 +465,16 @@ function splitEntry(text) {
     parts.push({label: lines[i].trim(), summary: ` (${end - i - 1})`, text: lines.slice(i, end + 1).join("\n")});
     i = end + 1;
   }
-  if (!parts.length) return {parts, gap: "", body: text};
+  let gap = "";
+  const at = whenLine === null ? -1 : whenLine - 1;
+  if (at >= i && lines.slice(i, at).every(l => !l.trim())) {
+    gap = lines.slice(i, at).map(l => `${l}\n`).join("");
+    const after = lines.slice(at + 1).join("\n"), body = after.replace(/^(?:[ \t]*\n)+/, "");
+    parts.push({label: "When", summary: `: ${lines[at].trim()}`, text: lines[at], when: true,
+                gap: after.slice(0, after.length - body.length)});
+    return {parts, gap, body};
+  }
+  if (!parts.length) return {parts, gap, body: text};
   const rest = lines.slice(i).join("\n"), body = rest.replace(/^(?:[ \t]*\n)+/, "");
   return {parts, gap: rest.slice(0, rest.length - body.length), body};
 }

@@ -215,9 +215,11 @@ async function chooseNote(ids) {
 // what's shown is what's saved, an emptied repeat included.  Several: plain
 // words, and each keeps its own repeater unless one is typed.
 async function chooseDate(ids, verb, task = null) {
-  const stamp = task?.[verb === "sched" ? "scheduled" : "deadline"];
-  const date = await pickDate(`${verb === "sched" ? "Schedule" : "Deadline"}${what(ids)}`, verb,
-                              stamp ? parseStamp(stamp) : {}, task ? "" : "Repeaters already there stay, unless you type one.");
+  const stamp = task?.[{sched: "scheduled", due: "deadline", when: "when"}[verb]];
+  const hint = !task ? "Repeaters already there stay, unless you type one."
+    : stamp?.includes("--") ? "It spans days: Set makes it one." : "";
+  const date = await pickDate(`${{sched: "Schedule", due: "Deadline", when: "When"}[verb]}${what(ids)}`,
+                              verb === "when" ? "event" : verb, stamp ? parseStamp(stamp) : {}, hint);
   if (date) run(verb, ids, [date.date ? (task ? `<${date.date}>` : date.date) : date]);
 }
 
@@ -364,7 +366,7 @@ function doControl(b, ids, task) {
     case "states": return chooseState(ids, task);
     case "pri": return choosePriority(ids, task ? task.priority : undefined);
     case "note": return chooseNote(ids);
-    case "sched": case "due": return chooseDate(ids, b.dataset.do, task);
+    case "sched": case "due": case "when": return chooseDate(ids, b.dataset.do, task);
     case "edit": return location.hash = `#/e/${encodeURIComponent(ids[0])}`;
     case "read": return location.hash = `#/r/${encodeURIComponent(ids[0])}`;
     case "check": return check(ids[0], b);

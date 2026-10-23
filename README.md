@@ -100,8 +100,8 @@ that instead: it carries both.
   through the weeks.
 - **A task's page** shows it as fields: tap the title to rename it, a
   state to set it (with a note where Org would ask), what's set
-  (Scheduled, Deadline, Priority, Effort, Tags) to change it in a sheet,
-  or its + to add it. Then its details as Org renders them, its outline,
+  (Scheduled, Deadline, an event's When, Priority, Effort, Tags) to change
+  it in a sheet, or its + to add it. Then its details as Org renders them, its outline,
   its history of notes and state changes, its clocks and properties, each
   tapped to change. Move, refile, archive and kill come last.
 - **On any row**, a long press (or right-click) offers what you can decide
