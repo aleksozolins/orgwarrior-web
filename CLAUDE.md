@@ -388,7 +388,7 @@ routes the page (`#/v/QUERY`, `#/v/FILE::ID` a zoom, `#/t/ID`, `#/e/ID`,
   `orgwarrior` formula with both packages: two formulae can't share a
   Python package), the AUR (`orgwarrior-web` depending on `orgwarrior`,
   system site-packages), pipx or uv from PyPI. The dependency is plain
-  `orgwarrior>=0.1.0` (PyPI refuses git URLs); `[tool.uv.sources]` keeps
+  `orgwarrior>=X.Y.Z`, the release it needs (PyPI refuses git URLs); `[tool.uv.sources]` keeps
   `../orgwarrior` for development and isn't published. The package
   declares orgwarrior's entry point too, so one pipx or uv install gives
   both commands, one engine copy (see orgwarrior's engine stamp).
