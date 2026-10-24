@@ -1,50 +1,57 @@
 # The calendar feed
 
-`/calendar.ics` is your agenda as a calendar to subscribe to, read-only:
-scheduled dates, deadlines (a `-3d` warning becomes an alarm) and plain
-timestamps of open tasks and events, repeats included, and diary sexps
-(birthdays, `%%(diary-float ...)`) for the coming year. Done tasks,
-habits and read-only files are left out: a file that isn't writable is
-taken as a copy of another calendar (say Google's, exported to org from
-vdirsyncer by a script), which a calendar app showing both would show
-twice. Each event links to its task page, where you act on
-it; changes show on the calendar's next refresh.
+`/calendar.ics` is your agenda as a calendar you can subscribe to. It's
+read only. It includes open tasks' scheduled dates, deadlines and plain
+timestamps, events, repeats, and diary sexps (birthdays,
+`%%(diary-float ...)`) for the coming year. A deadline's warning (`-3d`)
+becomes an alarm. Each event links to its task's page, where you can
+change it, and changes show up on the calendar's next refresh.
 
-Calendar apps can't sign in, so the feed takes a token of its own in its
-URL, one that opens the feed and nothing else:
+Done tasks, habits and read-only files are left out. A file that isn't
+writable is treated as a copy of another calendar, like a Google calendar
+that a script exports to org through vdirsyncer. A calendar app showing
+both would show those events twice.
+
+Calendar apps can't sign in, so the feed takes a token in its URL. Make
+one just for the feed. It opens the feed and nothing else:
 
 ```sh
 orgwarrior-web token add calendar --calendar --url https://10.0.0.5:22546
 ```
 
-Subscribe to the URL it prints:
+Then subscribe to the URL it prints:
 
-- **Android:** [ICSx⁵](https://icsx5.bitfire.at/) (F-Droid or Play) takes
-  the URL and a refresh interval and adds a read-only calendar to the
-  phone's, so any calendar app shows it. Google Calendar's app hides
-  such calendars until its settings allow non-Google ones. With your own
-  certificate, the phone needs its CA installed ([phone.md](phone.md)). Every 15
-  minutes to an hour is plenty: a fetch takes milliseconds.
-- **iPhone:** Settings → Calendar → Accounts → Add Account → Other →
-  Add Subscribed Calendar, with the CA trusted ([phone.md](phone.md)).
-- **Desktop:** a calendar app that fetches it itself: Thunderbird ("On the
-  Network"), GNOME Calendar or Evolution, Apple Calendar with the location
-  "On My Mac".
-- **Google Calendar** ("From URL") or iCloud fetch from their servers, so
-  they need a public HTTPS address (a tunnel), refresh every few hours to
-  a day, and keep a copy of your schedule.
+- **Android**: [ICSx⁵](https://icsx5.bitfire.at/) (on F-Droid or Play)
+  takes the URL and a refresh interval and adds it as a read-only
+  calendar on the phone, so any calendar app can show it. Google
+  Calendar's app hides calendars like this until you allow non-Google
+  calendars in its settings. If you made your own certificate, the phone
+  needs its CA installed ([phone.md](phone.md)). Refreshing every 15
+  minutes to an hour is plenty, and each fetch takes milliseconds.
+- **iPhone**: Settings → Calendar → Accounts → Add Account → Other → Add
+  Subscribed Calendar. The CA has to be trusted first
+  ([phone.md](phone.md)).
+- **Desktop**: use a calendar app that fetches the feed itself, like
+  Thunderbird ("On the Network"), GNOME Calendar, Evolution, or Apple
+  Calendar with the location set to "On My Mac".
+- **Google Calendar** ("From URL") and iCloud fetch from their own
+  servers. They need a public HTTPS address (a tunnel, for example), only
+  refresh every few hours to once a day, and keep a copy of your
+  schedule.
 
-`[web.calendar]` in orgwarrior's config (defaults shown):
+The feed's options go under `[web.calendar]` in orgwarrior's config.
+These are the defaults:
 
 ```toml
 [web.calendar]
-keywords = true            # "NEXT Call dentist" in titles
-deadlines = true           # deadlines as events, not only scheduled dates
-alarms = true              # a deadline's warning (-3d) as an alarm
-alarm_time = "09:00"       # when, for an all-day deadline
-deadline_prefix = "Due: "  # a deadline's title starts with it ("" for none)
+keywords = true            # put the keyword in titles: "NEXT Call dentist"
+deadlines = true           # show deadlines as events, not just scheduled dates
+alarms = true              # turn a deadline's warning (-3d) into an alarm
+alarm_time = "09:00"       # the alarm's time, for a deadline with no time
+deadline_prefix = "Due: "  # what a deadline's title starts with ("" for nothing)
 ```
 
-Times have no time zone: the device's own, as in org. `.+` and `++`
-repeaters become plain repeats from the current date, which iCalendar
-can't say otherwise; the date moves once you mark it done.
+Times have no time zone. They're in the device's own time, as in org.
+iCalendar has no way to say org's `.+` and `++` repeaters, so they become
+plain repeats from the current date. The date moves when you mark the
+task done.

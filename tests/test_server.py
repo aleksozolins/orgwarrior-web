@@ -655,7 +655,7 @@ def test_keymap(web):
     from orgwarrior_web.server import key_table
     base, ow = web
     table = json.loads(get(f"{base}/api/views")[2])["keymap"]
-    assert table["preset"] is None and {"name": "kill", "group": "The task", "what": "kill (asks first)",
+    assert table["preset"] is None and {"name": "kill", "group": "The task", "what": "delete it (asks first)",
                                         "keys": ["C-k"], "org": ["C-k"]} in table["actions"]
     ow = StubOrgwarrior()
     ow.config.web = {"keys": {"preset": "evil", "kill": "C-d"}}

@@ -30,11 +30,11 @@ await run(async t => {
     return dd && {keys: dt.childNodes[0].textContent.trim(), marked: !!dt.querySelector(".rebound")};
   }, name);
   await check("? says the preset", /the evil preset/.test(await page.$eval("#sheet", s => s.textContent)));
-  const kill = await row("kill");
+  const kill = await row("delete it");
   await check("? kill: d, marked", kill?.keys === "d" && kill.marked);
-  const state = await row("state");
+  const state = await row("set the state");
   await check("? state: t, org's, unmarked", state?.keys === "t" && !state.marked);
-  await check("? an action without a key: –", (await row("its notes and history"))?.keys === "–");
+  await check("? an action without a key: –", (await row("list its notes and state changes"))?.keys === "–");
   await page.keyboard.press("Escape");
   await sheetGone();
 
