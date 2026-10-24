@@ -98,13 +98,15 @@ def alarm(stamp: dict, opts: dict, summary: str) -> list[str]:
 
 def ics(entries: list[dict], opts: dict, task_url, now: datetime.datetime | None = None) -> str:
     """The calendar of ENTRIES (api.calendar): open tasks and events, no
-    habits; TASK_URL(id) is the link each event carries."""
+    habits, nothing from a read-only file (another calendar's copy: a
+    calendar app showing both would show it twice); TASK_URL(id) is the
+    link each event carries."""
     stamp_now = (now or datetime.datetime.now(datetime.UTC)).strftime("%Y%m%dT%H%M%SZ")
     lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//orgwarrior-web//EN",
              "CALSCALE:GREGORIAN", "X-WR-CALNAME:orgwarrior",
              "REFRESH-INTERVAL;VALUE=DURATION:PT1H", "X-PUBLISHED-TTL:PT1H"]
     for e in entries:
-        if e["habit"] or e["done"]:
+        if e["habit"] or e["done"] or e["read_only"]:
             continue
         summary = f"{e['keyword']} {e['title']}" if opts["keywords"] and e["keyword"] else e["title"]
         url = task_url(e["id"])

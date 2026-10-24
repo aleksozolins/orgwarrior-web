@@ -406,6 +406,8 @@ function showSignIn() {
 async function showEdit(id) {
   const h = location.hash, task = await api(`/api/task/${encodeURIComponent(id)}`), [heading] = task.lines;
   if (location.hash !== h) return;
+  // Read only (an old link, a typed address): its page to read instead.
+  if (task.read_only) return location.replace(`#/t/${encodeURIComponent(task.id)}`);
   const {parts, gap, body} = splitEntry(task.body, task.when_line);
   detail.innerHTML = `<button class="back" onclick="goBack()" data-hint="ESC">‹ Back</button>
     <div class="detail">

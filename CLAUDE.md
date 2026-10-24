@@ -115,7 +115,8 @@ file, never committed, holds the maintainer's deployment and to-do.
   apart. `[web.tabs]`, `[web.keys]`, `[web.calendar]` checked at startup:
   a typo stops the server, not the page.
 - **Calendar feed** (`feed.py`, the engine's `calendar` op; feed.py only
-  writes text): open tasks and events, all-day end exclusive, timed ones
+  writes text): open tasks and events, none from a read-only file (another
+  calendar's copy: a calendar app showing both shows it twice), all-day end exclusive, timed ones
   floating (no time zone), repeaters as RRULEs (`.+`/`++` as plain ones:
   iCalendar can't say them), diary sexps one event a day for a year,
   UIDs the whole hash plus the stamp's kind (stable across fetches), a
@@ -251,6 +252,11 @@ file, never committed, holds the maintainer's deployment and to-do.
   offers + When; an event no Schedule or Deadline (it would show twice). The tags sheet:
   inherited ones shown, not settable; each `{ }` group one of; filetags
   never offered.
+- **Read only** (show's `read_only`, a row's `data-ro`: its file isn't
+  writable, a calendar a script exports): the page to read, every field
+  text, no adders, Edit, Move or Kill; the menu Open alone; marks pass it
+  over; a key or control that changes it is refused before any sheet opens
+  (`refuseReadOnly`), as the engine refuses it anyway.
 - Each section with a list has a key that lists it as a sheet: History
   `Z`, Clocked `l`; Outline's, `h`, zooms the list into it instead (A
   file's view, below). The section's name is a control showing its key.

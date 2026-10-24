@@ -7,29 +7,32 @@
 // opening its sheet, as its key does) and what isn't (adders), its text
 // with Edit, its outline, history and clocks (each only once it has some:
 // the empty ones are a line of adders), and last what's done after reading
-// it: move, refile, archive, kill.
+// it: move, refile, archive, kill.  A read-only task (its file isn't
+// writable: a calendar's copy) the same to read, with none of the controls.
 async function showTask(id, quiet) {
   if (!quiet) detail.innerHTML = `<div class="status">Loading…</div>`;
   const h = location.hash;
   const task = await api(`/api/task/${encodeURIComponent(id)}?html=1`);
   if (location.hash !== h) return;
   currentTask = task;
+  const ro = task.read_only;
   // Its file shows it there (TAB); each parent zooms into it, this task among its headings.
   const where = [`<a href="#/v/${encodeURIComponent(task.file)}" data-reveal data-hint="TAB" title="Show it in its file">${esc(task.file)}</a>`, ...task.parents.map(p => p.id
     ? `<a href="#/v/${encodeURIComponent(zoomQuery(task.file, p.id))}" data-zoom="${esc(p.id)}">${esc(p.title)}</a>` : esc(p.title))].join(" › ");
   const [heading, ...rest] = task.lines;
   const text = detailsHtml(task, rest);
   const kids = task.children.length ? kidsHtml(task.children, {parent: task.id}, addUnder(task)) : "";
-  const history = task.history.length ? `<div class="section-title with-action">${sectionName("History", "notes", "history")}<button data-f="note"${hintAttr("note")}>+ Note</button></div>` +
-    `<div class="detail notes">${noteComposer()}${historyHtml(task)}</div>` : "";
+  const history = task.history.length ? (ro ? `<div class="section-title">History</div>`
+    : `<div class="section-title with-action">${sectionName("History", "notes", "history")}<button data-f="note"${hintAttr("note")}>+ Note</button></div>`) +
+    `<div class="detail notes">${ro ? "" : noteComposer()}${historyHtml(task)}</div>` : "";
   // Effort is a field of its own (E): not listed again here.
   const own = task.properties.filter(p => p.name !== "Effort");
-  const props = own.length ? `<div class="section-title with-action">${sectionName("Properties", "props", "properties")}` +
-    `<button data-do="propnew">+ Property</button></div><div class="detail props">${own.map(p =>
-      `<button class="prop" data-do="propedit" data-name="${esc(p.name)}"><span class="name">${esc(p.name)}</span>` +
-      `<span class="value">${esc(p.value)}</span></button>`).join("")}</div>` : "";
+  const props = own.length ? (ro ? `<div class="section-title">Properties</div>`
+    : `<div class="section-title with-action">${sectionName("Properties", "props", "properties")}<button data-do="propnew">+ Property</button></div>`) +
+    `<div class="detail props">${own.map(p => (ro ? `<div class="prop">` : `<button class="prop" data-do="propedit" data-name="${esc(p.name)}">`) +
+      `<span class="name">${esc(p.name)}</span><span class="value">${esc(p.value)}</span>${ro ? "</div>" : "</button>"}`).join("")}</div>` : "";
   // The sections with nothing in them yet: their adders, one line.
-  const adders = [text ? "" : `<button data-do="edit"${hintAttr("edit")}>+ Add details</button>`,
+  const adders = ro ? "" : [text ? "" : `<button data-do="edit"${hintAttr("edit")}>+ Add details</button>`,
     task.children.length ? "" : `<a class="add-here" href="${esc(addUnder(task))}"${hintAttr("add-under")}>+ Add heading</a>`,
     task.history.length ? "" : `<button data-f="note"${hintAttr("note")}>+ Note</button>`,
     task.clocks.length ? "" : clockButton(task),
@@ -37,17 +40,18 @@ async function showTask(id, quiet) {
   detail.innerHTML = `<div class="stuck-title" aria-hidden="true">${esc(task.title)}</div>` +
     `<button class="back" onclick="goBack()" data-hint="ESC">‹ Back</button>` +
     `<div class="detail task-fields"><div class="where"><span class="id">${esc(task.id)}</span>${where}${
-      task.from ? `<span class="from">from ${esc(task.from)}</span>` : ""}</div>` +
+      task.from ? `<span class="from">from ${esc(task.from)}</span>` : ""}${
+      ro ? `<span class="read-only" title="Its file isn't writable: shown, never changed">read only</span>` : ""}</div>` +
     `${taskFieldsHtml(task, heading)}</div>` +
     (text ? `<div class="section-title with-action">Details<button data-do="read"${hintAttr("read")} title="Full screen"
-       aria-label="Read it full screen">⤢</button><button data-do="edit"${hintAttr("edit")}>✎ Edit</button></div>` +
+       aria-label="Read it full screen">⤢</button>${ro ? "" : `<button data-do="edit"${hintAttr("edit")}>✎ Edit</button>`}</div>` +
       `<div class="detail">${text}</div>` : "") + kids +
     `${history}${task.clocks.length ? clocksHtml(task) : ""}${props}` +
     (adders ? `<div class="adders">${adders}</div>${task.history.length ? "" : `<div class="detail notes composer">${noteComposer()}</div>`}` : "") +
-    `<div class="detail"><div class="actions page-actions"><button data-do="move"${hintAttr("move")}>Move</button>` +
+    (ro ? "" : `<div class="detail"><div class="actions page-actions"><button data-do="move"${hintAttr("move")}>Move</button>` +
     `<button data-do="refile"${hintAttr("refile")}>Refile</button><button data-do="archive"${hintAttr("archive")}>Archive</button>` +
-    `<button data-do="kill" class="danger"${hintAttr("kill")}>Kill</button></div></div>`;
-  wireTaskPage(task);
+    `<button data-do="kill" class="danger"${hintAttr("kill")}>Kill</button></div></div>`);
+  if (!ro) wireTaskPage(task);
   wireRendered(detail, task);
   pageForm = {hash: location.hash, state: formState(detail)};
   // A clock running here that the page hasn't heard of (started elsewhere):
@@ -70,7 +74,7 @@ function detailsHtml(task, lines) {
 function wireRendered(root, task, clip = true) {
   const box = root.querySelector(".rendered");
   if (!box) return;
-  [...box.querySelectorAll("li.on, li.off, li.trans")].forEach((li, i) => {
+  if (!task.read_only) [...box.querySelectorAll("li.on, li.off, li.trans")].forEach((li, i) => {
     const code = li.firstElementChild, cb = task.checkboxes[i];
     if (!cb || code?.tagName !== "CODE") return;
     const b = document.createElement("button");
@@ -95,7 +99,7 @@ async function showRead(id, quiet) {
   if (location.hash !== h) return;
   currentTask = task;
   detail.innerHTML = `<div class="read-page"><div class="read-bar"><button class="back" onclick="goBack()" data-hint="ESC">‹ Back</button>` +
-    `<button data-do="edit"${hintAttr("edit")}>✎ Edit</button></div>` +
+    `${task.read_only ? "" : `<button data-do="edit"${hintAttr("edit")}>✎ Edit</button>`}</div>` +
     `<h1 class="read-title">${esc(task.title)}</h1>` +
     (task.html.trim() ? `<div class="rendered read">${task.html}</div>` : `<div class="status">No details yet.</div>`) +
     foldDrawers(task.lines.slice(1), task, true) + `</div>`;
@@ -180,12 +184,17 @@ function taskFieldsHtml(task, heading) {
     ...(event && !task.deadline ? [] : [["due", "deadline", "Deadline", "+ Deadline", task.deadline && stamp(task.deadline)]]),
     ["effort", "effort", "Effort", "+ Effort", task.effort && esc(task.effort)],
     ["tags", "tags", "Tags", "+ Tags", task.tags.length && task.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("")]];
+  const kw = task.keyword;
+  if (task.read_only) {  // what's set, as text: nothing to tap
+    const set = fields.filter(f => f[4]).map(([, , label, , value]) => `<span class="field"><span class="label">${label}</span> ${value}</span>`);
+    return `<div class="title-row">${kw ? `<span class="kw" style="${styleFor(task.done ? "done" : "todo", kw)}">${esc(kw)}</span>` : ""}<div class="heading">${titleHtml(heading)}</div></div>
+      ${set.length ? `<div class="field-line">${set.join("")}</div>` : ""}`;
+  }
   const set = fields.filter(f => f[4]).map(([verb, action, label, , value]) =>
     `<button data-do="${verb}"${hintAttr(action)}><span class="label">${label}</span> ${value}</button>`);
   const unset = fields.filter(f => !f[4]).map(([verb, action, , add]) => `<button data-do="${verb}"${hintAttr(action)}>${add}</button>`);
   // The state: side by side one chip before the title, opening the state
   // sheet (t, then its key); on a phone the full row, a tap to any (CSS).
-  const kw = task.keyword;
   const chip = `<button class="state-chip" data-do="states"${hintAttr("state")} aria-label="State"${
     kw ? ` style="${styleFor(task.done ? "done" : "todo", kw)}"` : ""}>${kw ? esc(kw) : "–"}</button>`;
   // When it was closed: org's, set by a done state and gone when reopened, so shown, not changed.
@@ -209,9 +218,10 @@ const sectionName = (name, verb, action) => `<button class="section-name" data-d
 // without (a state change, a reschedule) is a quiet line.  Each opens to be
 // changed or deleted.
 function historyHtml(task) {
-  const one = h => `<button class="note${h.text ? "" : " quiet"}" data-do="noteedit" data-n="${h.n}">` +
+  const tag = task.read_only ? "div" : "button";
+  const one = h => `<${tag} class="note${h.text ? "" : " quiet"}"${task.read_only ? "" : ` data-do="noteedit" data-n="${h.n}"`}>` +
     `<div class="when">${historyLabel(h, task.done_keywords)}<span>${esc(historyTime(h))}</span></div>${
-      h.text ? `<div class="text">${esc(h.text)}</div>` : ""}</button>`;
+      h.text ? `<div class="text">${esc(h.text)}</div>` : ""}</${tag}>`;
   const [recent, older] = [task.history.slice(0, 3), task.history.slice(3)];
   return recent.map(one).join("") + (older.length
     ? `<details class="older"><summary>${older.length} older</summary>${older.map(one).join("")}</details>` : "");
@@ -222,7 +232,7 @@ const againstEffort = (m, effort) => effort == null ? hm(m)
   : `<span class="${m > effort ? "over" : ""}">${hm(m)} / ${hm(effort)}</span>`;
 
 // Clock in, or out when it's the one running (drawClock keeps it so).
-const clockButton = task => clockingOn(task)
+const clockButton = task => task.read_only ? "" : clockingOn(task)
   ? `<button data-do="clockout"${hintAttr("clock-out")}>■ Clock out</button>` : `<button data-do="clockin"${hintAttr("clock-in")}>⏱ Clock in</button>`;
 
 // Its clocks by day, newest first, each day its total and a tap on a clock to

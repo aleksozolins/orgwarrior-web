@@ -181,7 +181,7 @@ function markRange(row, fromId = null) {
   const rows = cursorRows(), at = markCursor(), to = rows.indexOf(row);
   const start = fromId ? rows.findIndex(r => r.dataset.id === fromId) : at ? rows.indexOf(at) : -1;
   const from = start < 0 ? to : start;
-  for (const r of rows.slice(Math.min(from, to), Math.max(from, to) + 1)) setMarked(r.dataset.id, true);
+  for (const r of rows.slice(Math.min(from, to), Math.max(from, to) + 1)) setMarked(r.dataset.id, true, true);
   [cursor, cursorIndex] = [row.dataset.id, to];
   markCursor();
 }
@@ -233,7 +233,7 @@ async function clockKey(action) {
   if (!target) return;
   if (target.ids.length > 1) return toast("One task at a time", true);
   const task = target.task ?? await orToast(api(`/api/task/${encodeURIComponent(target.ids[0])}`));
-  if (!task) return;
+  if (!task || action !== "outline" && refuseReadOnly(target.ids, task)) return;
   if (action === "clocks") return chooseClock(task);
   if (action === "outline") return zoomTo(task.file, task.id);
   if (action === "history") return chooseHistory(task);
@@ -287,7 +287,7 @@ function widen() {
 async function act(verb) {
   cancelPreview();  // its sheet first: a preview landing now would close it
   const target = await keyTargets();
-  if (!target) return;
+  if (!target || refuseReadOnly(target.ids, target.task)) return;
   if (["down", "up", "promote", "demote"].includes(verb) && target.ids.length === 1) {
     justMoved = target.ids[0];
     // Into the heading above: unfolded, so it lands in view.
@@ -665,7 +665,7 @@ function listKey({e, key, t, wasKeyboard, page, handled}) {
     else if (markFrom === row.dataset.id) markFrom = null;  // unmarked: no range from it
     return moveCursor(1, true);
   }
-  if (action === "mark-all") return handled(), cursorRows().forEach(r => setMarked(r.dataset.id, true));
+  if (action === "mark-all") return handled(), cursorRows().forEach(r => setMarked(r.dataset.id, true, true));
   if (action === "unmark-all") return handled(), leaveSelection();
   if (action === "down" || action === "up") {
     if (!cursorRows().length) return;  // a task page alone: the arrows scroll it
@@ -688,7 +688,8 @@ function listKey({e, key, t, wasKeyboard, page, handled}) {
   if (action === "priority-up" || action === "priority-down") {
     handled();
     cancelPreview();
-    return keyTargets().then(tg => tg && run("pri", tg.ids, [action === "priority-up" ? "up" : "down"]));
+    return keyTargets().then(tg => tg && !refuseReadOnly(tg.ids, tg.task)
+      && run("pri", tg.ids, [action === "priority-up" ? "up" : "down"]));
   }
   // Clocking, org's I and O: lower case now, upper case asks the time.
   if (["clock-in", "clock-in-at", "clocks", "history", "properties", "effort", "outline"].includes(action)) return handled(), clockKey(action);
@@ -706,7 +707,8 @@ function listKey({e, key, t, wasKeyboard, page, handled}) {
   if (action === "edit" || action === "read") {  // edit its text; read it full screen
     handled();
     return keyTargets().then(tg => {
-      if (tg?.ids.length === 1) location.hash = `#/${action === "edit" ? "e" : "r"}/${encodeURIComponent(tg.ids[0])}`;
+      if (tg?.ids.length !== 1 || action === "edit" && refuseReadOnly(tg.ids, tg.task)) return;
+      location.hash = `#/${action === "edit" ? "e" : "r"}/${encodeURIComponent(tg.ids[0])}`;
     });
   }
   if (action === "command") {

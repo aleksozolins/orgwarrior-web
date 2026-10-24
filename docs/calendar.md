@@ -3,8 +3,11 @@
 `/calendar.ics` is your agenda as a calendar to subscribe to, read-only:
 scheduled dates, deadlines (a `-3d` warning becomes an alarm) and plain
 timestamps of open tasks and events, repeats included, and diary sexps
-(birthdays, `%%(diary-float ...)`) for the coming year. Done tasks and
-habits are left out. Each event links to its task page, where you act on
+(birthdays, `%%(diary-float ...)`) for the coming year. Done tasks,
+habits and read-only files are left out: a file that isn't writable is
+taken as a copy of another calendar (say Google's, exported to org from
+vdirsyncer by a script), which a calendar app showing both would show
+twice. Each event links to its task page, where you act on
 it; changes show on the calendar's next refresh.
 
 Calendar apps can't sign in, so the feed takes a token of its own in its

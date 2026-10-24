@@ -228,4 +228,22 @@ await run(async t => {
   await page.waitForFunction(d => document.querySelector("#detail .task-fields [data-do=when]")?.textContent.includes(d), {timeout: 5000}, tomorrow);
   await check("When moved the date, the text kept",
     new RegExp(`^<${tomorrow} [^ >]+>\\nAt the clinic$`).test((await taskOf(appt)).body));
+
+  // A read-only file (a calendar a script exports): its tasks to read, no
+  // controls; the menu says so, the editor's address goes to the page.
+  await Deno.chmod(`${Deno.env.get("ORGWARRIOR_FIXTURE_DEST")}/calendar.org`, 0o444);
+  await page.reload();
+  await page.waitForSelector("#detail .where .read-only");
+  await check("read only: said so, nothing to change, Details to read",
+    await page.$("#detail .where .read-only") && !(await page.$("#detail [data-do]:not([data-do=read]), #detail .heading[role=button], #detail .adders"))
+      && /^When /.test(await page.$eval("#detail .field-line", f => f.textContent.trim())));
+  await go(`#/e/${appt}`);
+  await expect("its editor goes to its page", s => s.hash === `#/t/${appt}` && !s.main.includes("Save"));
+  await go("#/v/week");
+  await page.waitForSelector(`.task[data-id="${appt}"][data-ro]`);
+  await longPress("Dentist appointment");
+  await check("its menu: Open, nothing to change",
+    await page.$eval("#sheet", s => s.textContent.includes("Read only") && !s.querySelector("[data-do]:not([data-do=open])")));
+  await page.keyboard.press("Escape");
+  await expect("closed", s => !s.sheet);
 });

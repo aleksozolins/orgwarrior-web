@@ -101,7 +101,7 @@ class StubOrgwarrior:
 
     def calendar(self, days=365):
         return [{"id": "c1c0", "title": "Call dentist", "keyword": "NEXT", "done": False,
-                 "habit": False, "tags": [], "category": "tasks",
+                 "habit": False, "read_only": False, "tags": [], "category": "tasks",
                  "stamps": [{"kind": "scheduled", "start": "2026-10-14", "start_time": None,
                              "end": "2026-10-14", "end_time": None, "repeat": None,
                              "warning": None}]}]

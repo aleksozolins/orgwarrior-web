@@ -252,7 +252,9 @@ pre.help { font: 13px/1.45 ui-monospace, "JetBrains Mono", monospace; white-spac
 .detail .where { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
 .detail .where .id { font-family: ui-monospace, monospace; color: var(--c4); margin-right: 8px; }
 .detail .where a { color: inherit; text-decoration: underline dotted; text-underline-offset: 3px; }
-.detail .where .from { margin-left: 8px; padding: 0 7px; border-radius: 999px; background: var(--chip); color: var(--c5); }
+.detail .where .from, .detail .where .read-only { margin-left: 8px; padding: 0 7px; border-radius: 999px; background: var(--chip); color: var(--c5); }
+.detail .where .read-only { color: var(--muted); }
+.title-row .kw { font-weight: 700; }
 .detail pre {
   margin: 0; white-space: pre-wrap; overflow-wrap: anywhere;
   font: 14px/1.45 ui-monospace, "JetBrains Mono", monospace;
@@ -293,7 +295,7 @@ pre.help { font: 13px/1.45 ui-monospace, "JetBrains Mono", monospace; white-spac
 .field-line button { font: inherit; font-size: 15px; border: 0; background: none; color: var(--fg); padding: 2px 0;
   cursor: pointer; text-align: left; }
 .field-line .label { color: var(--muted); }
-.field-line .closed { font-size: 15px; padding: 2px 0; }
+.field-line .closed, .field-line .field { font-size: 15px; padding: 2px 0; }
 .field-line .tag { margin-left: 4px; }
 .task-fields .adders, .add-fields .adders { border-top: 0; padding: 10px 0 0; }
 .add-fields { margin-bottom: 14px; }

@@ -173,7 +173,7 @@ function painted(text, spans, from = 0, to = text.length, {links = [], box = nul
 function itemRow(line) {
   const t = line.text, parts = t.split("\x1f");
   const [open, close] = line.id
-    ? [`<button class="task" data-id="${esc(line.id)}">`, "</button>"]
+    ? [`<button class="task" data-id="${esc(line.id)}"${line.read_only ? " data-ro" : ""}>`, "</button>"]
     : [`<div class="task static">`, "</div>"];
   const habit = line.habit
     ? `<div class="habit">${painted(line.habit.text, line.habit.spans, 0, undefined, {habit: true})}</div>` : "";
@@ -196,7 +196,7 @@ function childRow(c, tree = null) {
   const tags = c.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("");
   const depth = tree ? ` style="--d:${tree.depth}"` : "";
   const [open, close] = c.id
-    ? [`<button class="task${tree ? " node" : ""}" data-id="${esc(c.id)}"${depth}>`, "</button>"]
+    ? [`<button class="task${tree ? " node" : ""}" data-id="${esc(c.id)}"${depth}${c.read_only ? " data-ro" : ""}>`, "</button>"]
     : [`<div class="task static${tree ? " node" : ""}"${depth}>`, "</div>"];
   const fold = tree ? `<span class="fold-tw"${tree.fold ? ` data-tw="${esc(c.id ?? "")}" aria-label="${
     tree.fold === "▾" ? "Fold" : "Unfold"}"` : ""}>${tree.fold}</span>` : "";
@@ -243,11 +243,14 @@ function toggleFold(id, open = !folds.has(id)) {
 // a tree in the list, all.
 const CLIP = 15, SHOWN = 12;  // SHOWN: .rows.clipped's nth-child too
 // TITLE, a tree in the list: its line's own (a zoom's breadcrumb, else "Outline").
+// In a read-only file (its rows' read_only): no + Add, no Reorder.
 function kidsHtml(kids, owner, add, rows = kids.map(c => childRow(c)).join(""), title = null) {
-  const order = kids.length > 1 && kids.every(c => c.id);
+  const ro = kids.some(c => c.read_only);
+  const order = !ro && kids.length > 1 && kids.every(c => c.id);
   const clip = !title && owner.parent && kids.length > CLIP;
   return `<div class="kids" data-owner="${esc(JSON.stringify(owner))}">` +
-    `<div class="section-title with-action">${title ?? sectionName("Outline", "outline", "outline")}<a class="add-here" href="${esc(add)}"${hintAttr(owner.file ? "add-beside" : "add-under")}>+ Add</a>${
+    `<div class="section-title with-action">${title ?? sectionName("Outline", "outline", "outline")}${ro ? ""
+      : `<a class="add-here" href="${esc(add)}"${hintAttr(owner.file ? "add-beside" : "add-under")}>+ Add</a>`}${
       order ? `<button data-reorder>Reorder</button>` : ""}</div>` +
     `<div class="rows${clip ? " clipped" : ""}">${rows}</div>` +
     (clip ? `<button class="show-more" data-more>Show ${kids.length - SHOWN} more</button>` : "") +

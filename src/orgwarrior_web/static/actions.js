@@ -359,7 +359,20 @@ function controlsHtml(task) {
     <div class="actions">${b("select", "Select…")}${b("archive", "Archive")}${b("kill", "Kill", "danger")}</div>`;
 }
 
+// A task in a read-only file (show's read_only, a row's data-ro): shown
+// everywhere, changed nowhere.  The engine refuses too; refused here, no
+// sheet opens first for a change that can't be made.
+const isReadOnly = id => !!document.querySelector(`.task[data-id="${CSS.escape(id)}"][data-ro]`);
+function refuseReadOnly(ids, task) {
+  if (!task?.read_only && !ids.some(isReadOnly)) return false;
+  toast(task?.read_only ? `${task.file} is read only` : "Read only: its file isn't writable", true);
+  return true;
+}
+// What a read-only task still offers: to look.
+const LOOKS = new Set(["open", "read", "outline"]);
+
 function doControl(b, ids, task) {
+  if (!LOOKS.has(b.dataset.do) && refuseReadOnly(ids, task)) return;
   switch (b.dataset.do) {
     case "state": return b.dataset.kw === (task?.keyword ?? "") ? null
       : b.dataset.kw ? setState(ids, b.dataset.kw) : run("nokeyword", ids);
@@ -449,7 +462,7 @@ async function openMenu(id) {
   if (!task) return;
   const b = await ask(
     `<div class="sheet-title menu-head"><span>${titleHtml(task.lines[0])}</span><button data-do="open">Open ›</button></div>
-     ${controlsHtml(task)}`,
+     ${task.read_only ? `<div class="hint">Read only: ${esc(task.file)} isn't writable</div>` : controlsHtml(task)}`,
     (e, done) => { const b = e.target.closest("[data-do]"); if (b) done(b); });
   if (b) doControl(b, [task.id], task);
 }
@@ -480,7 +493,9 @@ function leaveSelection() {
 
 const toggleSelected = id => setMarked(id, !selected.has(id));
 
-function setMarked(id, on) {
+// QUIET: a read-only row passed over without a word (a range, all of them).
+function setMarked(id, on, quiet = false) {
+  if (on && isReadOnly(id)) return quiet || toast("Read only: its file isn't writable", true);
   if (on) selected.add(id); else selected.delete(id);
   for (const row of document.querySelectorAll(`.task[data-id="${CSS.escape(id)}"]`))
     row.classList.toggle("picked", selected.has(id));

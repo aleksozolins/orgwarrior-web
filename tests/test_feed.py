@@ -8,9 +8,9 @@ from orgwarrior.config import ConfigError
 from orgwarrior_web.feed import DEFAULTS, fold, ics, options
 
 
-def entry(title, *stamps, keyword=None, done=False, habit=False, tags=()):
+def entry(title, *stamps, keyword=None, done=False, habit=False, tags=(), read_only=False):
     return {"id": f"h-{title}", "title": title, "keyword": keyword, "done": done,
-            "habit": habit, "tags": list(tags), "inherited": ["agenda"], "category": "x", "stamps": list(stamps)}
+            "habit": habit, "read_only": read_only, "tags": list(tags), "inherited": ["agenda"], "category": "x", "stamps": list(stamps)}
 
 
 def stamp(kind, start, start_time=None, end=None, end_time=None, repeat=None, warning=None):
@@ -52,9 +52,10 @@ def test_events():
               keyword="TODO"),
         entry("Old", stamp("scheduled", "2026-10-01"), keyword="DONE", done=True),
         entry("Floss", stamp("scheduled", "2026-10-14", repeat={"type": ".+", "value": 1, "unit": "d"}),
-              keyword="TODO", habit=True))
+              keyword="TODO", habit=True),
+        entry("Standup", stamp("timestamp", "2026-10-15", "09:00"), read_only=True))
     by = {e["SUMMARY"]: e for e in evs}
-    # Keywords in titles; done tasks and habits left out.
+    # Keywords in titles; done tasks, habits and read-only files (another calendar's copy) left out.
     assert set(by) == {"NEXT Call dentist", "Dentist", "Lunch", "Trip", "TODO Trash"}
     call = by["NEXT Call dentist"]
     assert call["DTSTART;VALUE=DATE"] == "20261014" and call["DTEND;VALUE=DATE"] == "20261015"

@@ -103,7 +103,9 @@ that instead: it carries both.
   (Scheduled, Deadline, an event's When, Priority, Effort, Tags) to change
   it in a sheet, or its + to add it. Then its details as Org renders them, its outline,
   its history of notes and state changes, its clocks and properties, each
-  tapped to change. Move, refile, archive and kill come last.
+  tapped to change. Move, refile, archive and kill come last. A task in a
+  file that isn't writable (`chmod a-w`: a calendar a script exports to
+  org) is read only: the same page to read, nothing to change.
 - **On any row**, a long press (or right-click) offers what you can decide
   without opening it; select several to act on them at once.
 - **Adding**: the + adds a task, an event or a plain heading, with dates,
@@ -233,7 +235,8 @@ Android and iPhone: [docs/phone.md](https://github.com/aleksozolins/orgwarrior-w
 
 `/calendar.ics` is your agenda as a calendar to subscribe to, read-only:
 scheduled dates, deadlines (their warnings as alarms), events, repeats and
-diary sexps like birthdays, each event a link to its task. It takes a
+diary sexps like birthdays, each event a link to its task; not a
+read-only file's (another calendar's copy). It takes a
 token of its own, one that opens the feed and nothing else:
 
 ```sh
