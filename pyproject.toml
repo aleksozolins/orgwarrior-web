@@ -1,6 +1,6 @@
 [project]
 name = "orgwarrior-web"
-version = "0.2.0"
+version = "0.3.0"
 description = "The org agenda on a phone: a small web page over orgwarrior's engine"
 requires-python = ">=3.11"
 readme = "README.md"
@@ -15,7 +15,7 @@ classifiers = [
     "Topic :: Office/Business :: Scheduling",
     "Topic :: Text Editors :: Emacs",
 ]
-dependencies = ["orgwarrior>=0.2.0"]
+dependencies = ["orgwarrior>=0.3.0"]
 
 [project.urls]
 Homepage = "https://github.com/aleksozolins/orgwarrior-web"
