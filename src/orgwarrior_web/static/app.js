@@ -170,6 +170,10 @@ function painted(text, spans, from = 0, to = text.length, {links = [], box = nul
 // A habit's consistency graph goes under the title, as org draws it, each day
 // in the page theme's colors (style.css): the Emacs theme's, which the line
 // carries too, are picked for Emacs's background, not the page's.
+// The time before the title; the category and ID at its right (the
+// category side by side only: a phone hasn't the room); a line above it only
+// for a label that says something (In 2 d., Sched. 3x, Deadline), not the
+// bare "Scheduled" (org's default leader: a day's view is nearly all of them).
 function itemRow(line) {
   const t = line.text, parts = t.split("\x1f");
   const [open, close] = line.id
@@ -179,11 +183,12 @@ function itemRow(line) {
     ? `<div class="habit">${painted(line.habit.text, line.habit.spans, 0, undefined, {habit: true})}</div>` : "";
   if (parts.length < 4) return `${open}<div class="title">${painted(t, line.spans)}</div>${habit}${close}`;
   const start = t.length - parts[3].length;
-  const meta = [parts[0], parts[1].replace(/\.+$/, ""), parts[2].replace(/:\s*$/, "")]
-    .map(s => s.trim()).filter(Boolean).map(s => `<span>${esc(s)}</span>`).join("");
+  const [category, time, label] = [parts[0], parts[1].replace(/\.+$/, ""), parts[2].replace(/:\s*$/, "")].map(s => s.trim());
   const id = line.id ? `<span class="id">${esc(line.id)}</span>` : "";
-  return `${open}<div class="meta">${meta}${id}</div>` +
-    `<div class="title">${painted(t, line.spans, start)}</div>${habit}${close}`;
+  const said = label === "Scheduled" ? "" : label;
+  return `${open}${said ? `<div class="meta"><span>${esc(said)}</span></div>` : ""}` +
+    `<div class="title">${id}${category ? `<span class="cat">${esc(category)}</span>` : ""}${
+      time ? `<span class="time">${esc(time)}</span>` : ""}${painted(t, line.spans, start)}</div>${habit}${close}`;
 }
 
 // A child heading on its parent's page: a row like an agenda item's, so tapping,

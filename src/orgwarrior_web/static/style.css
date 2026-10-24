@@ -225,6 +225,15 @@ pre.help { font: 13px/1.45 ui-monospace, "JetBrains Mono", monospace; white-spac
 .kids > .sheet-buttons { padding: 0 16px; }
 .meta { display: flex; gap: 8px; font-size: 13px; color: var(--muted); }
 .meta .id { margin-left: auto; font-family: ui-monospace, monospace; color: var(--c4); }
+/* A row: the time before the title; at its right the ID, and the category
+   side by side only (a phone hasn't the room). */
+.title > .id { float: right; margin-left: 8px; font: 13px ui-monospace, monospace; color: var(--c4); line-height: 1.6; }
+.title > .cat { float: right; margin-left: 12px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.title > .time { margin-right: 8px; color: var(--muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 999px) { .title > .cat { display: none; } }
+/* On touch, rows have no IDs: they're for the keys and the CLI (a task's
+   page still shows its own). */
+@media (hover: none) and (pointer: coarse) { .task .id { display: none; } }
 .title { margin-top: 2px; }
 .habit { margin-top: 4px; font: 13px/1.3 ui-monospace, "JetBrains Mono", monospace; white-space: pre; }
 /* Its days in the theme's own colors, as org-habit's states: clear blue, ready
@@ -252,8 +261,8 @@ pre.help { font: 13px/1.45 ui-monospace, "JetBrains Mono", monospace; white-spac
 .detail .where { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
 .detail .where .id { font-family: ui-monospace, monospace; color: var(--c4); margin-right: 8px; }
 .detail .where a { color: inherit; text-decoration: underline dotted; text-underline-offset: 3px; }
-.detail .where .from, .detail .where .read-only { margin-left: 8px; padding: 0 7px; border-radius: 999px; background: var(--chip); color: var(--c5); }
-.detail .where .read-only { color: var(--muted); }
+.detail .where .from, .detail .where .read-only, .detail .where .category { margin-left: 8px; padding: 0 7px; border-radius: 999px; background: var(--chip); color: var(--c5); }
+.detail .where .read-only, .detail .where .category { color: var(--muted); }
 .title-row .kw { font-weight: 700; }
 .detail pre {
   margin: 0; white-space: pre-wrap; overflow-wrap: anywhere;

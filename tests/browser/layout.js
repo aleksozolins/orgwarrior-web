@@ -3,7 +3,7 @@
 import {run, base, PHONE, WIDE} from "./lib.js";
 
 await run(async t => {
-  const {page, fail, expect, idOf, tap, go, back} = t;
+  const {page, fail, expect, check, idOf, tap, go, back} = t;
   await page.goto(`${base}/#/v/all`);
   await page.waitForSelector(".task[data-id]");
   // On a desktop: a right-click is the long press, Escape is Back for a sheet,
@@ -152,4 +152,27 @@ await run(async t => {
   await page.waitForFunction(() => !window.marker && document.querySelector(".task[data-id]"));
   console.log("ok   stale page: reloads itself once nothing's open");
 
+  // Rows: the time before the title, no line above for a bare Scheduled; the
+  // category at the right side by side, not on a phone; on touch no IDs.
+  await page.setViewport(PHONE);
+  await page.goto(`${base}/#/v/today`);
+  await page.waitForSelector(".task[data-id]");
+  const row = title => page.$$eval(".task[data-id]", (rs, t) => {
+    const r = rs.find(r => r.textContent.includes(t)), cat = r?.querySelector(".title > .cat");
+    return r && {meta: r.querySelector(".meta")?.innerText ?? null, time: r.querySelector(".title > .time")?.textContent ?? null,
+                 cat: cat && cat.offsetParent ? cat.textContent : null};
+  }, title);
+  const appt = await row("Dentist appointment");
+  await check("phone: the time before the title, no line above, no category", appt.time === "14:00" && appt.meta === null && appt.cat === null);
+  const touch = await page.evaluate(() => matchMedia("(hover: none) and (pointer: coarse)").matches);
+  if (touch) await check("touch: no IDs on rows", await page.$$eval(".task .id", ids => ids.every(i => !i.offsetParent)));
+  await page.setViewport(WIDE);
+  await page.waitForFunction(() => [...document.querySelectorAll("#list .task[data-id]")].some(r => r.textContent.includes("Dentist appointment")), {timeout: 5000});
+  await check("side by side: the category at the right", (await row("Dentist appointment"))?.cat === "calendar");
+  // A task's page names its category where it isn't the file's name.
+  await go("#/v/all");
+  await page.waitForFunction(() => document.querySelector("#list")?.textContent.includes("Buy batteries"), {timeout: 5000});
+  await go(`#/t/${await idOf("Buy batteries")}`);
+  await page.waitForSelector("#detail .where");
+  await check("the task page: its category", await page.$eval("#detail .where", w => w.querySelector(".category")?.textContent === "Inbox"));
 });

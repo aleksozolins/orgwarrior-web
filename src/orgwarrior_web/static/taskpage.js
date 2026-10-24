@@ -41,6 +41,9 @@ async function showTask(id, quiet) {
     `<button class="back" onclick="goBack()" data-hint="ESC">‹ Back</button>` +
     `<div class="detail task-fields"><div class="where"><span class="id">${esc(task.id)}</span>${where}${
       task.from ? `<span class="from">from ${esc(task.from)}</span>` : ""}${
+      // Its category, where it isn't the file's name (#+category:, a CATEGORY property).
+      task.category && task.category !== task.file.replace(/^.*\//, "").replace(/\.org$/, "")
+        ? `<span class="category">${esc(task.category)}</span>` : ""}${
       ro ? `<span class="read-only" title="Its file isn't writable: shown, never changed">read only</span>` : ""}</div>` +
     `${taskFieldsHtml(task, heading)}</div>` +
     (text ? `<div class="section-title with-action">Details<button data-do="read"${hintAttr("read")} title="Full screen"

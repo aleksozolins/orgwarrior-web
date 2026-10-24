@@ -97,7 +97,8 @@ that instead: it carries both.
   (`projects.org`), a word to search, `--archive` and a word to search the
   archives too, `closed week` for what you got done. On a day's agenda,
   ‹ › step through the days and a tap on the date picks any; on the week,
-  through the weeks.
+  through the weeks. Each row is the time and the task, with where it
+  lives at the right on a desktop.
 - **A task's page** shows it as fields: tap the title to rename it, a
   state to set it (with a note where Org would ask), what's set
   (Scheduled, Deadline, an event's When, Priority, Effort, Tags) to change

@@ -36,9 +36,20 @@ file, never committed, holds the maintainer's deployment and to-do.
 
 ## What org draws
 - **Org lays out the fields**: the server's `prefix_format`
-  `%c\x1f%t\x1f%s\x1f` makes each line category, time, label, heading,
-  drawn as a two-line row. Separators but no ID: a diary line, not
-  tappable. Colors are the engine's spans and `[colors]` (`sgrStyle`).
+  `%c\x1f%t\x1f%s\x1f` makes each line category, time, label, heading.
+  Separators but no ID: a diary line, not tappable. Colors are the
+  engine's spans and `[colors]` (`sgrStyle`).
+- **A row** (one layout, from Reddit's "cluttered"): the time before the
+  title; the category and ID at its right, the category side by side only
+  (a phone hasn't the room: the task page names it where it isn't the
+  file's name); a line above only for a label that says something (`In 2
+  d.`, `Sched. 3x`, `Deadline`), not the bare `Scheduled` (org's default
+  leader: a day's view is nearly all of them; a customized one shows).
+  Keywords, priorities and dates stay as text: the state is what's
+  scanned for, and color alone says nothing to a colorblind reader. On
+  touch, rows show no IDs (the keys' and the CLI's); a task's page always
+  does. Not chosen: a preference between this and org's two-line rows
+  (one layout, as everywhere here).
 - **Now line**: the server turns the time grid on whatever the CLI's
   config says; the page drops empty hours and draws org's `now` line. A
   view showing it reloads in place every 5 minutes.
