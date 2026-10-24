@@ -4,18 +4,42 @@
 
 Needs orgwarrior 0.4.0.
 
-- **`orgwarrior-web cert ADDRESS`** makes the certificate a phone needs to
-  install the page as an app, with a small CA that can only vouch for that
-  address. It replaces the openssl commands in docs/phone.md.
-- **`/ca.crt`**: a phone can download the CA straight from the server to
-  install it.
-- **`orgwarrior-web service`** prints a systemd unit, or a launch agent on
-  a Mac, that keeps the server running, with the full paths filled in.
-- The quick start is shorter: check your setup with `orgwarrior --check`,
+Getting it onto a phone used to mean pasting openssl commands and writing
+a service unit by hand. Now each step is a command.
+
+### Setup commands
+
+- **`orgwarrior-web cert ADDRESS…`** makes the certificate a phone needs
+  to install the page as an app, with a small certificate authority (CA)
+  that can only vouch for the addresses you give. Even if its key leaked,
+  it couldn't impersonate any other site. It writes to
+  `~/.local/share/orgwarrior-web/tls/`, prints the exact options to serve
+  with, and won't replace an existing CA without `--force` (your devices
+  trust that one). It uses only openssl options that macOS's LibreSSL
+  supports too.
+- **`/ca.crt`**: the server hands out the CA certificate next to its own,
+  with no sign-in, so a phone can download and install it straight from
+  the server.
+- **`orgwarrior-web service [OPTION…]`** prints a systemd user unit, or a
+  launch agent on a Mac, that runs orgwarrior-web with those options. It
+  fills in the command's full path and a `PATH` that finds `emacsclient`,
+  checks the options, and turns `--cert` and `--key` into full paths. What
+  to do with it is in comments at the top, so it reads the same piped or
+  saved, and it warns if it would point at uvx's temporary copy.
+
+### Docs
+
+- **A shorter quick start**: check your setup with `orgwarrior --check`,
   then three commands to reach it from your phone.
-- Plainer wording everywhere a message can appear: the `token` command,
-  the server's errors, config and key-binding mistakes, and the page's
-  own notices.
+- docs/phone.md uses `cert` and `/ca.crt` in place of the openssl
+  commands, and "Running it as a service" uses `service`.
+
+### Clearer messages
+
+- Plainer wording everywhere a message can appear: the `token` command
+  and its help, the server's errors, mistakes in `[web]`, `[web.tabs]`,
+  `[web.keys]` and `[web.calendar]`, and the page's own notices ("It's
+  read only, because its file isn't writable").
 
 ## 0.3.1 (2026-10-24)
 
