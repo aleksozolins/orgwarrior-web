@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.2 (2026-10-24)
+
+Needs orgwarrior 0.4.2.
+
+From a newcomer's run through the quick start:
+
+- The quick start says to install only one of the three packages with
+  pipx or uv, and what to uninstall first, before the install fails rather
+  than after.
+- `token add NAME --add` says to send the link to that person, and that it
+  can only add to your inbox.
+- docs/phone.md covers trusting the CA on Debian, Ubuntu and Fedora, and
+  where an iPhone puts the downloaded profile.
+- "Running it as a service" includes `daemon-reload`, and says when to
+  drop the unit's `emacs.service` lines.
+
 ## 0.4.1 (2026-10-24)
 
 - **docs/calendar.md explains showing another calendar in your agenda**:
