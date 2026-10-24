@@ -99,3 +99,11 @@ def test_service_warns_about_a_temporary_copy(monkeypatch, capsys):
     monkeypatch.setattr(setup.shutil, "which", lambda name: "/home/sam/.cache/uv/archive-v0/x/bin/orgwarrior-web")
     assert setup.service_main([], server_parser()) == 0
     assert "is a temporary copy" in capsys.readouterr().err
+
+
+@needs_openssl
+def test_cert_leaves_an_existing_folder_alone(tmp_path):
+    tmp_path.chmod(0o755)
+    setup.make_cert(["127.0.0.1"], tmp_path)
+    assert oct(tmp_path.stat().st_mode & 0o777) == "0o755"
+    assert oct((tmp_path / "ca.key").stat().st_mode & 0o777) == "0o600"

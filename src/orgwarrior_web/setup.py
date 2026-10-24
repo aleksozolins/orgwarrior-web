@@ -30,12 +30,14 @@ def _constraint(ip) -> str:
 def make_cert(addresses: list[str], folder: Path, force: bool = False) -> None:
     ips = [ipaddress.ip_address(a) for a in addresses]
     if not shutil.which("openssl"):
-        raise RuntimeError("openssl isn't installed (it's on almost every system: try your package manager)")
+        raise RuntimeError("openssl isn't installed. It's on almost every system, so try your package manager")
     if (folder / "ca.crt").exists() and not force:
         raise RuntimeError(f"there's already a CA in {folder}. A new one means trusting it again "
                            "on every device. Use --force to replace it.")
-    folder.mkdir(parents=True, exist_ok=True)
-    folder.chmod(0o700)
+    # Private, but only a folder made here: --dir . mustn't lock up the one you're in.
+    if not folder.exists():
+        folder.mkdir(parents=True)
+        folder.chmod(0o700)
     names = ",".join(f"IP:{ip}" for ip in ips)
     constraints = ",".join(f"permitted;{_constraint(ip)}" for ip in ips)
 
@@ -98,10 +100,11 @@ def cert_main(argv: list[str]) -> int:
         print(f"orgwarrior-web cert: openssl failed: {e.stderr.decode(errors='replace').strip()}", file=sys.stderr)
         return 1
     host, shown = args.address[0], _tilde(folder)
+    url_host = f"[{host}]" if ":" in host else host  # IPv6, bracketed in a URL
     print(f"Made a CA and a certificate for {', '.join(args.address)} in {shown}.\n\n"
           f"Serve the page with them:\n\n"
           f"  orgwarrior-web --host {host} --cert {shown}/server.crt --key {shown}/server.key\n\n"
-          f"Then trust the CA on each device. Open https://{host}:22546/ca.crt on it\n"
+          f"Then trust the CA on each device. Open https://{url_host}:22546/ca.crt on it\n"
           f"(the browser warns until the CA is trusted) and install the file. docs/phone.md\n"
           f"says how for Android, iPhone, Mac, Windows and Linux. Keep ca.key private:\n"
           f"it's what can make certificates for these addresses.")
