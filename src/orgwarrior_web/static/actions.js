@@ -268,7 +268,7 @@ async function newHeading(ids) {
   const found = await orToast(api(`/api/refile-places?ids=${ids.map(encodeURIComponent).join(",")}`));
   if (!found) return;
   const {places, new_in: newIn} = found;
-  if (!places.length) return toast("Nowhere to put it: org-refile-targets names no file", true);
+  if (!places.length) return toast("There's nowhere to refile it. org-refile-targets doesn't name any file", true);
   const chosen = places.find(p => p === newIn) ?? places.find(p => newIn && p.includes(newIn)) ?? places[0];
   const pending = ask(
     `<div class="sheet-title">New heading for${what(ids) || " this task"}</div>
@@ -366,7 +366,7 @@ function controlsHtml(task) {
 const isReadOnly = id => !!document.querySelector(`.task[data-id="${CSS.escape(id)}"][data-ro]`);
 function refuseReadOnly(ids, task) {
   if (!task?.read_only && !ids.some(isReadOnly)) return false;
-  toast(task?.read_only ? `${task.file} is read only` : "Read only: its file isn't writable", true);
+  toast(task?.read_only ? `${task.file} is read only` : "It's read only, because its file isn't writable", true);
   return true;
 }
 // What a read-only task still offers: to look.
@@ -463,7 +463,7 @@ async function openMenu(id) {
   if (!task) return;
   const b = await ask(
     `<div class="sheet-title menu-head"><span>${titleHtml(task.lines[0])}</span><button data-do="open">Open ›</button></div>
-     ${task.read_only ? `<div class="hint">Read only: ${esc(task.file)} isn't writable</div>` : controlsHtml(task)}`,
+     ${task.read_only ? `<div class="hint">This task is read only, because ${esc(task.file)} isn't writable.</div>` : controlsHtml(task)}`,
     (e, done) => { const b = e.target.closest("[data-do]"); if (b) done(b); });
   if (b) doControl(b, [task.id], task);
 }
@@ -496,7 +496,7 @@ const toggleSelected = id => setMarked(id, !selected.has(id));
 
 // QUIET: a read-only row passed over without a word (a range, all of them).
 function setMarked(id, on, quiet = false) {
-  if (on && isReadOnly(id)) return quiet || toast("Read only: its file isn't writable", true);
+  if (on && isReadOnly(id)) return quiet || toast("It's read only, because its file isn't writable", true);
   if (on) selected.add(id); else selected.delete(id);
   for (const row of document.querySelectorAll(`.task[data-id="${CSS.escape(id)}"]`))
     row.classList.toggle("picked", selected.has(id));
@@ -620,7 +620,7 @@ function pickClockTime(title, {hint = "", now = true, later = false, discard = f
       if (b.dataset.ct !== undefined) return done({time: b.dataset.ct});
       if (b.dataset.a === "at") {
         const v = sheet.querySelector("#ct-at").value;
-        return v ? done({time: v}) : toast("Pick a time, or a choice above", true);
+        return v ? done({time: v}) : toast("Pick a time, or one of the choices above", true);
       }
       if (b.dataset.a === "discard" || b.dataset.a === "open") done({[b.dataset.a]: true});
     });
@@ -808,7 +808,7 @@ function pickEffort(title, current, allowed = null) {
       if (b.dataset.v) return done(b.dataset.v);
       if (b.dataset.a === "clear") return done("none");
       const v = sheet.querySelector("#ef-other").value.trim();
-      return v ? done(v) : toast("A duration, or a choice above", true);
+      return v ? done(v) : toast("Give a duration, or pick one of the choices above", true);
     });
   sheet.querySelector("#ef-other")?.addEventListener("keydown", e => {
     if (e.key === "Enter") e.preventDefault(), sheet.querySelector("[data-a=set]").click();
@@ -853,7 +853,7 @@ async function editProp(task, name) {
       if (b.dataset.v) return done({value: b.dataset.v});
       if (b.dataset.a === "delete") return done({remove: true});
       const v = sheet.querySelector("#pr-value").value.trim();
-      return v ? done({value: v}) : toast("A value, or Delete", true);
+      return v ? done({value: v}) : toast("Give it a value, or use Delete", true);
     });
   sheet.querySelector("#pr-value").onkeydown = e => {
     if (e.key === "Enter") e.preventDefault(), sheet.querySelector("[data-a=save]").click();

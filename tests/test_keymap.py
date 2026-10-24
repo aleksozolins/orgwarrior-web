@@ -23,7 +23,7 @@ def test_syntax(spec, canonical):
 
 @pytest.mark.parametrize("spec, says", [
     ("<dwn>", "isn't a key"), ("S-1", "the character Shift makes"), ("C-C-k", "C- twice"),
-    ("ESC", "the page's own"), ("TAB", "the page's own"), ("C-w", "the browser keeps"),
+    ("ESC", "the page keeps for itself"), ("TAB", "the page keeps for itself"), ("C-w", "the browser keeps"),
     ("C-S-t", "the browser keeps"), ("a b c d", "three keys at most"), ("", "empty"),
 ])
 def test_bad_keys(spec, says):
@@ -50,13 +50,13 @@ def test_own_keys_take_theirs_from_the_defaults():
 
 
 @pytest.mark.parametrize("table, says", [
-    ({"kil": "x"}, "no action 'kil' .there's kill."),
+    ({"kil": "x"}, "no action 'kil'. Did you mean kill"),
     ({"kill": 3}, "a key"),
-    ({"kill": "d", "state": "d"}, "one key, two actions"),
+    ({"kill": "d", "state": "d"}, "the same key on two actions"),
     ({"kill": "d", "state": "d d"}, "one starts the other"),
     ({"kill": ["g", "g r"]}, "one starts the other"),
-    ({"preset": "vim"}, "isn't one"),
-    ({"kill": "C-w"}, r"\[web.keys\] kill: 'C-w': the browser keeps"),
+    ({"preset": "vim"}, "doesn't exist"),
+    ({"kill": "C-w"}, r"\[web.keys\] kill: 'C-w' uses C-w, which the browser keeps"),
 ])
 def test_bad_tables(table, says):
     with pytest.raises(KeysError, match=says):

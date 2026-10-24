@@ -21,7 +21,7 @@ file, never committed, holds the maintainer's deployment and to-do.
   connection at a time: Safari opens connections ahead and leaves them
   idle, and each held every other request for the 30 s timeout.
 - **Files**: `server.py`, `auth.py` (tokens), `feed.py`, `sanitize.py`,
-  `keymap.py`, `jsonfile.py` (tokens.json, tabs.json: reread when changed,
+  `keymap.py`, `setup.py` (`cert`, `service`), `jsonfile.py` (tokens.json, tabs.json: reread when changed,
   written atomically). The page in `static/`, plain scripts sharing one
   scope, no build step, loaded in this order: `app.js` (API, routes,
   history, the list), `prefs.js`, `sheets.js` (`ask`, `toast`, pickers),
@@ -141,6 +141,21 @@ file, never committed, holds the maintainer's deployment and to-do.
   before offering Install: no caching (the agenda must be live). Share
   target: Android's Share menu → the add page, first part the title, the
   rest the body.
+- **Setup commands** (`setup.py`), each replacing a page of
+  instructions a newcomer copied by hand: `cert ADDRESS…` (openssl, since
+  the stdlib can't make certificates) makes a CA name-constrained to those
+  IPs and a server certificate in `$XDG_DATA_HOME/orgwarrior-web/tls`,
+  refusing to replace a CA without `--force` (every device trusts it);
+  `service [OPTION…]` prints a systemd user unit or a launch agent with
+  the command's own path (`shutil.which`, the stable symlink, not the venv
+  behind it) and a `PATH` holding `emacsclient`'s folder, the options
+  checked by the server's own parser, `--cert`/`--key` made absolute.
+  Printed, not installed: the user sees and saves it. What to do with it
+  is in comments at its top, not on stderr: piped (`| head`), stderr came
+  out ahead of it, the steps before the unit; saved to a file, one stderr
+  line says what to run. Not chosen: a
+  `doctor` here (orgwarrior's `--check` covers Emacs; the server checks
+  its own config at startup).
 - **HTTPS** (`--cert`): the handshake deferred to the first read, inside
   the handler's thread and timeout: done in `accept()`, a client that
   never finished it would stop the server accepting.
@@ -403,7 +418,8 @@ file, never committed, holds the maintainer's deployment and to-do.
 
 ### Routes
 `/?key=`, `/calendar.ics`, `/healthz` (3 s, `ok` or 503 with the reason
-in the journal), `/manifest.webmanifest`, and under `/api/`: `views`
+in the journal), `/ca.crt` (public: the `ca.crt` beside `--cert`, for a
+phone to fetch before it trusts it), `/manifest.webmanifest`, and under `/api/`: `views`
 (`keymap` too; an add token gets mode and name only), `sent`, `view?q=`,
 `task/ID` (`?html=1`), `tags`, `refile-targets`, `refile-places`,
 `add-places`, `file?f=`, `clock`, `report?q=`; POST `act`, `clock`,

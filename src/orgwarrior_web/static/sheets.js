@@ -321,7 +321,7 @@ function readDate(root, id, kind) {
       || (kind === "event" && warnings.length))
     return toast(`${cookieHint[kind].replace(/^r/, "R").replace(":", " should look like")}`, true), null;
   if (!d) return t || e || r ? (toast("Pick a date", true), null) : "";
-  if (e && !t) return toast("Until needs a start time", true), null;
+  if (e && !t) return toast("Until needs a start time first", true), null;
   return [d, t && (e ? `${t}-${e}` : t), ...repeaters, ...warnings].filter(Boolean).join(" ");
 }
 
@@ -418,7 +418,7 @@ function tagPicker(tags, mode, initial = [], inherited = [], root = sheet) {
     else {
       const input = root.querySelector("#newtag");
       const t = input.value.trim().replace(/^:+|:+$/g, "");
-      if (!/^[\p{L}\p{N}_@#%]+$/u.test(t)) { toast("A tag is letters, digits, _ @ # %", true); return true; }
+      if (!/^[\p{L}\p{N}_@#%]+$/u.test(t)) { toast("A tag can only have letters, digits, _ @ # and %", true); return true; }
       if (!declared.has(t) && !other.includes(t)) {
         other.push(t);
         root.querySelector("#othertags").insertAdjacentHTML("beforeend", chip(t));

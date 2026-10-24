@@ -49,9 +49,12 @@ every view and every change.
 
 ## Quick start
 
-You'll need Emacs 29 or later running as a daemon (`emacs --daemon`, or
-your system's Emacs service). Then install it one of these ways. Each one
-gives you both the page and the `orgwarrior` command:
+You'll need Emacs 29 or later with its server running and your org
+settings loaded: `emacs --daemon`, your system's Emacs service, or
+`(server-start)` in your init file
+([orgwarrior's quick start](https://github.com/aleksozolins/orgwarrior#quick-start)
+has the details, Mac included). Then install it one of these ways. Each
+one gives you both the page and the `orgwarrior` command:
 
 ```sh
 brew install aleksozolins/tap/orgwarrior   # macOS or Linux
@@ -59,9 +62,10 @@ yay -S orgwarrior-web                      # Arch, with any AUR helper
 pipx install orgwarrior-web                # Python 3.11+; uv tool install works too
 ```
 
-Start it and open <http://127.0.0.1:22546/>:
+Check your setup, then start it and open <http://127.0.0.1:22546/>:
 
 ```sh
+orgwarrior --check     # says what's missing, if anything
 orgwarrior-web
 ```
 
@@ -70,22 +74,27 @@ the first token.
 
 ### Getting it on your phone
 
-Here's the whole path, with details in the sections below. `10.0.0.5`
-stands for the server's address on your network.
+`10.0.0.5` stands for the server's address on your network. A phone only
+installs the page as an app over HTTPS, so the first step makes a
+certificate.
 
-1. Check the basics: with Emacs running and `org-agenda-files` set,
-   `orgwarrior` in a terminal shows today's agenda.
-2. Make a certificate for `10.0.0.5`. A phone only installs the page as an
-   app over HTTPS. [docs/phone.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/phone.md)
-   has the few openssl commands, and then you install its `ca.crt` on the
-   phone.
-3. Make a token for the phone. `orgwarrior-web token add phone --url
-   https://10.0.0.5:22546` prints a sign-in link ([Signing in](#signing-in)).
-4. Run the server where the phone can reach it: `orgwarrior-web --host
-   10.0.0.5 --cert … --key …`. To keep it running, set it up
-   [as a service](#running-it-as-a-service).
-5. Open the link on the phone once, then install the page as an app
-   ([docs/phone.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/phone.md)).
+```sh
+orgwarrior-web cert 10.0.0.5
+orgwarrior-web token add phone --url https://10.0.0.5:22546
+orgwarrior-web --host 10.0.0.5 --cert ~/.local/share/orgwarrior-web/tls/server.crt \
+  --key ~/.local/share/orgwarrior-web/tls/server.key
+```
+
+1. `cert` makes the certificate, along with a small certificate authority
+   (CA) that your devices will trust.
+2. `token add` prints a sign-in link for the phone
+   ([Signing in](#signing-in)).
+3. The last command runs the server where the phone can reach it. To keep
+   it running, see [Running it as a service](#running-it-as-a-service).
+4. On the phone, open `https://10.0.0.5:22546/ca.crt` and install the CA
+   ([docs/phone.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/phone.md)
+   shows where), then open the sign-in link and install the page as an
+   app.
 
 ### Updating
 
@@ -188,6 +197,8 @@ kept on the server, so all your devices get them.
 | `--cert FILE`, `--key FILE` | serves HTTPS (see [On a phone](#on-a-phone)) |
 | `token add NAME [--add \| --calendar \| --mcp] [--url BASE]` | makes a sign-in link for a device ([Signing in](#signing-in)). `--mcp` makes one for Claude, through [orgwarrior-mcp](https://github.com/aleksozolins/orgwarrior-mcp). |
 | `token list`, `token revoke NAME` | lists the tokens, or cuts one off |
+| `cert ADDRESS…` | makes a certificate for HTTPS, and a CA your devices trust ([On a phone](#on-a-phone)) |
+| `service [OPTION…]` | prints a service that keeps it running ([Running it as a service](#running-it-as-a-service)) |
 
 For a monitoring tool, `GET /healthz` needs no token. It answers `ok` when
 Emacs responds within 3 seconds, and otherwise a 503, with the reason in
@@ -247,8 +258,8 @@ Open the address in the phone's browser and sign in with its link. To
 install the page as an app, with its own icon, no address bar, and (on
 Android) a spot in the Share menu, browsers require HTTPS. There are three
 ways to get it: a Chrome flag for a plain-HTTP address, your own
-certificate for the server's IP address (a small CA you trust on each
-device, a few openssl commands), or a reverse proxy you already run.
+certificate for the server's IP address (`orgwarrior-web cert`), or a
+reverse proxy you already run.
 [docs/phone.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/phone.md)
 walks through all three, plus installing on Android and iPhone.
 
@@ -310,34 +321,26 @@ from org's and why.
 
 ## Running it as a service
 
-On Linux, a systemd user unit keeps it running. Save this as
-`~/.config/systemd/user/orgwarrior-web.service`:
-
-```ini
-[Unit]
-Description=orgwarrior-web
-After=emacs.service
-Wants=emacs.service
-
-[Service]
-ExecStart=/usr/bin/orgwarrior-web --host 10.0.0.5 --cert %h/.local/share/orgwarrior-web/tls/server.crt --key %h/.local/share/orgwarrior-web/tls/server.key
-Restart=on-failure
-
-[Install]
-WantedBy=default.target
-```
+`orgwarrior-web service` prints a service that runs orgwarrior-web with
+the options you give it: a systemd user unit on Linux, or a launch agent on
+a Mac. It fills in the command's full path and a `PATH` that finds
+`emacsclient`, with comments at the top saying where to save it and how
+to start it. On Linux:
 
 ```sh
+mkdir -p ~/.config/systemd/user
+orgwarrior-web service --host 10.0.0.5 --cert ~/.local/share/orgwarrior-web/tls/server.crt \
+  --key ~/.local/share/orgwarrior-web/tls/server.key \
+  > ~/.config/systemd/user/orgwarrior-web.service
 systemctl --user enable --now orgwarrior-web
 loginctl enable-linger "$USER"   # keeps it (and Emacs) running when you're logged out
 ```
 
-`ExecStart` needs the command's full path, which `command -v
-orgwarrior-web` prints. With pipx and uv it's in `~/.local/bin/`, written
-`%h/.local/bin/` in a unit. `emacs.service` is the user unit that comes
-with Emacs. If you start your daemon some other way, drop those two lines.
-On macOS, a launch agent does the same job (`launchctl`). Make sure its
-`PATH` includes Homebrew's `emacsclient`.
+The unit starts after `emacs.service`, the user unit that comes with
+Emacs. If you start your daemon some other way, drop the `After=` and
+`Wants=` lines. On a Mac, save the output as
+`~/Library/LaunchAgents/orgwarrior-web.plist` and start it with
+`launchctl bootstrap gui/$UID ~/Library/LaunchAgents/orgwarrior-web.plist`.
 
 ## Contributing
 

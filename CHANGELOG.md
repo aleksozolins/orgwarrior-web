@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.4.0 (2026-10-24)
+
+Needs orgwarrior 0.4.0.
+
+- **`orgwarrior-web cert ADDRESS`** makes the certificate a phone needs to
+  install the page as an app, with a small CA that can only vouch for that
+  address. It replaces the openssl commands in docs/phone.md.
+- **`/ca.crt`**: a phone can download the CA straight from the server to
+  install it.
+- **`orgwarrior-web service`** prints a systemd unit, or a launch agent on
+  a Mac, that keeps the server running, with the full paths filled in.
+- The quick start is shorter: check your setup with `orgwarrior --check`,
+  then three commands to reach it from your phone.
+- Plainer wording everywhere a message can appear: the `token` command,
+  the server's errors, config and key-binding mistakes, and the page's
+  own notices.
+
 ## 0.3.1 (2026-10-24)
 
 Needs orgwarrior 0.3.1.

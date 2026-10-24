@@ -23,7 +23,7 @@ from orgwarrior import help as helpmod
 from orgwarrior.api import Orgwarrior, OrgwarriorError
 from orgwarrior.config import ConfigError
 
-from orgwarrior_web import feed, keymap
+from orgwarrior_web import feed, keymap, setup
 from orgwarrior_web.auth import Tokens, default_path, token_main
 from orgwarrior_web.jsonfile import JsonFile
 from orgwarrior_web.sanitize import sanitize
@@ -68,7 +68,7 @@ def instance_name(ow: Orgwarrior) -> str | None:
     (an add token) knows, and two installed apps tell apart."""
     name = ow.config.web.get("name")
     if name is not None and not (isinstance(name, str) and name.strip()):
-        raise ConfigError('[web] name is whose list this is: name = "Sam"')
+        raise ConfigError('[web] name has to be text, saying whose list this is: name = "Sam"')
     return name.strip() if name else None
 
 
@@ -77,7 +77,7 @@ def key_table(ow: Orgwarrior) -> dict:
     page's keys, checked here so a mistake stops the server, not a key."""
     keys = ow.config.web.get("keys", {})
     if not isinstance(keys, dict):
-        raise ConfigError('[web.keys] is a table: preset = "evil", kill = "d d"')
+        raise ConfigError('[web.keys] has to be a table, like preset = "evil" or kill = "d d"')
     try:
         return keymap.resolve(keys)
     except keymap.KeysError as e:
@@ -90,13 +90,13 @@ def tab_row(ow: Orgwarrior) -> list[dict]:
     views.  Checked at startup, so a typo stops the server, not the page."""
     web = ow.config.web
     if unknown := set(web) - {"tabs", "calendar", "name", "keys"}:
-        raise ConfigError(f"unknown key [web] {sorted(unknown)[0]!r}")
+        raise ConfigError(f"[web] has no key {sorted(unknown)[0]!r}")
     if "tabs" not in web:
         return [{"label": v, "query": v} for v in ow.views()]
     tabs = web["tabs"]
     if not isinstance(tabs, dict) or not tabs or not all(
             isinstance(q, str) and q.strip() for q in tabs.values()):
-        raise ConfigError('[web.tabs] maps tab labels to queries: next = "next"')
+        raise ConfigError('[web.tabs] has to map tab labels to queries, like next = "next"')
     return [{"label": label, "query": query.strip()} for label, query in tabs.items()]
 
 
@@ -133,8 +133,8 @@ class SavedTabs:
             tabs.append({"label": label, "query": query})
         elif at is None:
             if label in {t["label"] for t in config}:
-                raise OrgwarriorError(f"{label!r} is from config.toml: change it there")
-            raise OrgwarriorError(f"No saved tab {label!r}")
+                raise OrgwarriorError(f"{label!r} comes from config.toml, so change it there")
+            raise OrgwarriorError(f"There's no saved tab {label!r}")
         elif op == "rename":
             if not to:
                 raise OrgwarriorError("A tab needs a label")
@@ -148,7 +148,7 @@ class SavedTabs:
         elif op == "remove":
             del tabs[at]
         else:
-            raise OrgwarriorError(f"Not a tab change: {op!r}")
+            raise OrgwarriorError(f"{op!r} isn't a change to a tab")
         if self.file:
             self.file.save(tabs)
         else:
@@ -214,10 +214,10 @@ class Handler(BaseHTTPRequestHandler):
             print(f"{self.who or '-'} {url_path(self.path)}: {str(e)[:300]!r}", file=sys.stderr)
             self.send_json({"error": str(e)}, 400)
         except (ValueError, KeyError, TypeError) as e:  # a malformed body
-            self.send_json({"error": f"bad request: {type(e).__name__}: {e}"}, 400)
+            self.send_json({"error": f"The page sent a request the server can't read ({type(e).__name__}: {e})"}, 400)
         except Exception as e:
             traceback.print_exc()
-            self.send_json({"error": f"orgwarrior-web: {type(e).__name__}: {e}"}, 500)
+            self.send_json({"error": f"Something went wrong in orgwarrior-web ({type(e).__name__}: {e}). The server's log has the details"}, 500)
 
     def signed_in(self, scopes=("full",), key: str | None = None) -> bool:
         """Whether the request carries a known token of one of SCOPES (KEY,
@@ -289,6 +289,13 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_calendar(query.get("key", [None])[0])
         if url.path == "/healthz":
             return self.send_health()
+        if url.path == "/ca.crt":
+            # Public: a phone fetches it before it trusts the certificate.
+            try:
+                body = self.ca_file.read_bytes()
+            except (OSError, AttributeError):
+                return self.send_body(b"No ca.crt beside the server's certificate.", "text/plain; charset=utf-8", 404)
+            return self.send_body(body, "application/x-x509-ca-cert")
         if url.path == "/manifest.webmanifest":
             return self.send_manifest()
         if not url.path.startswith("/api/"):
@@ -356,12 +363,12 @@ class Handler(BaseHTTPRequestHandler):
         # JSON only: a cross-site page can't send that without a CORS preflight,
         # which this server never answers.
         if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
-            return self.send_json({"error": "expected application/json"}, 415)
+            return self.send_json({"error": "The server only takes JSON"}, 415)
         if url.path != "/api/sign-in" and not self.signed_in(("full", "add")):
             return self.refused()
         length = int(self.headers.get("Content-Length", 0))
         if not 0 <= length <= self.MAX_BODY:
-            return self.send_json({"error": "request too large"}, 413)
+            return self.send_json({"error": "That's too much to send at once"}, 413)
         self.body = json.loads(self.rfile.read(length) or b"{}")
 
     def post(self, url):
@@ -440,14 +447,13 @@ class Handler(BaseHTTPRequestHandler):
         no tags, marked :FROM: <token name>.  Anything more is refused, not
         dropped, so a client never believes it set something it didn't."""
         if extra := sorted(k for k, v in body.items() if v and k not in self.ADD_FIELDS):
-            return self.send_json({"error": f"this key can't set {', '.join(extra)}"}, 403)
+            return self.send_json({"error": f"This key can't set {', '.join(extra)}"}, 403)
         if not (body.get("title") or "").strip():
-            return self.send_json({"error": "A title, please"}, 400)
+            return self.send_json({"error": "It needs a title"}, 400)
         # Headings in details would be tasks of their own, with keywords, tags
         # and dates this key can't set.
         if has_headings(body.get("body") or ""):
-            return self.send_json({"error": "this key can't add headings: "
-                                   "a line of details can't start with *"}, 403)
+            return self.send_json({"error": "This key can't add headings, so a line of the details can't start with *"}, 403)
         fields = {k: body[k] for k in ("title", "body") if body.get(k)}
         # Always stamped: the list of what was sent is sorted by it.
         mark = {"properties": {"FROM": self.who}, "where": "task", "captured": True}
@@ -622,14 +628,16 @@ def make_server(host: str, port: int, ow: Orgwarrior, cert: str | None = None,
     it open."""
     loopback = is_loopback(host)
     if tokens is not None and not loopback and not tokens.load():
-        raise OrgwarriorError(f"no device can sign in yet, and {host} isn't loopback: "
-                              "make a token first (orgwarrior-web token add NAME)")
+        raise OrgwarriorError(f"no device can sign in yet. Off this machine ({host}) a token is "
+                              "needed first: orgwarrior-web token add NAME")
     handler = type("BoundHandler", (Handler,), {
         "ow": web_orgwarrior(ow), "tabs": tab_row(ow), "tokens": tokens,
         "saved_tabs": saved_tabs or SavedTabs(),
         "calendar": feed.options(ow.config.web.get("calendar", {})), "name": instance_name(ow),
         "keys": key_table(ow),
-        "open_without_tokens": loopback, "secure": bool(cert)})
+        "open_without_tokens": loopback, "secure": bool(cert),
+        # The CA `orgwarrior-web cert` made, beside the certificate.
+        "ca_file": Path(cert).with_name("ca.crt") if cert else None})
     server = Server((host, port), handler)
     if cert:
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -642,21 +650,33 @@ def make_server(host: str, port: int, ow: Orgwarrior, cert: str | None = None,
     return server
 
 
+def server_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(
+        prog="orgwarrior-web", description="Serve your org agenda as a web page, built for a phone "
+        "first. Each device signs in with its own token (orgwarrior-web token --help).",
+        epilog="Setting it up: `orgwarrior-web token` makes sign-in links, `orgwarrior-web cert` "
+        "makes a certificate for HTTPS, and `orgwarrior-web service` prints a service that keeps "
+        "it running. Each takes --help.")
+    ap.add_argument("--host", default="127.0.0.1",
+                    help="the address to listen on (default 127.0.0.1, which is open until you "
+                    "make a token; any other address needs one)")
+    ap.add_argument("--port", type=int, default=22546, help="the port (default 22546)")
+    ap.add_argument("-s", "--socket", help="the Emacs server socket's name, if it isn't the default")
+    ap.add_argument("--cert", help="a TLS certificate (PEM) to serve HTTPS, which a phone needs "
+                    "to install the page as an app")
+    ap.add_argument("--key", help="the certificate's private key (PEM), if it isn't in the --cert file")
+    return ap
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     if argv[:1] == ["token"]:
         return token_main(argv[1:])
-    ap = argparse.ArgumentParser(
-        prog="orgwarrior-web", description="Serve the org agenda as a phone-friendly web page. "
-        "Devices sign in with tokens: see `orgwarrior-web token --help`.")
-    ap.add_argument("--host", default="127.0.0.1",
-                    help="address to listen on (default 127.0.0.1, where it's open "
-                    "until a token is made; anywhere else it needs one)")
-    ap.add_argument("--port", type=int, default=22546)
-    ap.add_argument("-s", "--socket", help="emacsclient socket name")
-    ap.add_argument("--cert", help="TLS certificate (PEM) to serve HTTPS, which a phone needs "
-                    "to install the page as an app")
-    ap.add_argument("--key", help="its private key (PEM), if not in the --cert file")
+    if argv[:1] == ["cert"]:
+        return setup.cert_main(argv[1:])
+    if argv[:1] == ["service"]:
+        return setup.service_main(argv[1:], server_parser())
+    ap = server_parser()
     args = ap.parse_args(argv)
     if args.key and not args.cert:
         ap.error("--key needs --cert")

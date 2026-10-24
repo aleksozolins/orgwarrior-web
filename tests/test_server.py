@@ -333,7 +333,7 @@ def test_saved_tabs(web, tmp_path):
                        ({"op": "add", "label": config[0]["label"], "query": "x"}, "already"),
                        ({"op": "remove", "label": config[0]["label"]}, "config.toml"),
                        ({"op": "add", "label": "x", "query": " "}, "needs a query"),
-                       ({"op": "remove", "label": "nope"}, "No saved tab")]:
+                       ({"op": "remove", "label": "nope"}, "no saved tab")]:
         status, r = change(**body)
         assert status == 400 and says in r["error"], body
     change(op="remove", label="home")

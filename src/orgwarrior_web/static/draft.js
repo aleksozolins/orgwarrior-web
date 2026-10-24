@@ -15,13 +15,13 @@ async function draftTask(at = null) {
   const [tags, places] = fetched;
   const target = await keyTargets().catch(() => null);
   const near = target?.ids.length === 1 && target.task ? target.task : null;
-  if (at === "under" && !near) return toast("No task here to add under", true);
+  if (at === "under" && !near) return toast("There's no task here to add under", true);
   const parent = near?.parents.at(-1);
   const home = near?.file ?? (inFile() ? fileShown : null);
   const beside = at !== "beside" ? null : parent?.id
     ? {value: `u:${parent.id}`, label: `Under ${parent.title}`, file: home}
     : home ? {value: `t:${home}`, label: home, file: home} : null;
-  if (at === "beside" && !beside) return toast("No task or file here to add beside", true);
+  if (at === "beside" && !beside) return toast("There's no task or file here to add beside", true);
   const options = kind => {
     const all = [
       {value: "", label: places[kind][0].label, file: places[kind][0].file},

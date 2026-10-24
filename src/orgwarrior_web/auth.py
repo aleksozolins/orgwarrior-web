@@ -55,10 +55,10 @@ class Tokens:
 
     def add(self, name: str, scope: str = "full") -> str:
         if not NAME.fullmatch(name):
-            raise ValueError(f"not a token name: {name!r} (letters, digits, _ . -; up to 40)")
+            raise ValueError(f"{name!r} can't be a token name. Use up to 40 letters, digits, _ . or -")
         tokens = dict(self.load())
         if name in tokens:
-            raise ValueError(f"there is already a token {name!r}: revoke it first")
+            raise ValueError(f"there's already a token {name!r}. Revoke it first, or pick another name")
         token = secrets.token_urlsafe(32)
         tokens[name] = {"sha256": digest(token), "scope": scope,
                         "created": datetime.date.today().isoformat()}
@@ -68,29 +68,30 @@ class Tokens:
     def revoke(self, name: str):
         tokens = dict(self.load())
         if tokens.pop(name, None) is None:
-            raise ValueError(f"no token {name!r}")
+            raise ValueError(f"there's no token {name!r} (token list shows them)")
         self.file.save(tokens)
 
 
 def token_main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(
         prog="orgwarrior-web token",
-        description="Manage the tokens that let a device in. Each device gets its own, "
-        "so one can be cut off without the others. Changes count at once, no restart.")
+        description="Manage the tokens that let devices sign in. Each device gets its own, "
+        "so you can cut one off without the others. Changes take effect right away, "
+        "with no restart.")
     sub = ap.add_subparsers(dest="cmd", required=True)
     add = sub.add_parser("add", help="make a token for a device and print its sign-in link")
-    add.add_argument("name", help="what it's for: phone, laptop, ...")
+    add.add_argument("name", help="what it's for, like phone or laptop")
     scope = add.add_mutually_exclusive_group()
     scope.add_argument("--calendar", action="store_true",
-                       help="a token for a calendar app: opens the calendar feed and nothing else")
+                       help="for a calendar app: it opens the calendar feed and nothing else")
     scope.add_argument("--add", action="store_true",
-                       help="a token for someone else: adds to your inbox (marked FROM them) "
-                       "and sees nothing")
+                       help="for someone else: they can add to your inbox (marked FROM them) "
+                       "but can't see your list")
     scope.add_argument("--mcp", action="store_true",
-                       help="a token for Claude: opens orgwarrior-mcp and none of the page")
-    add.add_argument("--url", help="the server's address, to print the whole link "
-                     "(e.g. https://10.0.0.5:22546)")
-    sub.add_parser("list", help="the tokens there are")
+                       help="for Claude: it opens orgwarrior-mcp, not the page")
+    add.add_argument("--url", help="the server's address, so it can print the whole link "
+                     "(like https://10.0.0.5:22546)")
+    sub.add_parser("list", help="list the tokens")
     rev = sub.add_parser("revoke", help="cut a device off")
     rev.add_argument("name")
     args = ap.parse_args(argv)
@@ -110,15 +111,15 @@ def token_main(argv: list[str]) -> int:
                 print(f"Subscribe to this in the calendar app (ICSx\u2075 on Android):\n\n"
                       f"  {base}/calendar.ics?key={token}\n")
             else:
-                print(f"Open this once on {args.name}; it then stays signed in:\n\n"
+                print(f"Open this link once on {args.name}, and it stays signed in:\n\n"
                       f"  {base}/?key={token}\n\n"
-                      f"On an iPhone, an app added to the home screen doesn't share Safari's\n"
-                      f"sign-in: open it and paste the key there (the part after key=).\n")
-            print(f"It isn't shown again. `orgwarrior-web token revoke {args.name}` cuts it off.")
+                      f"On an iPhone, an app on the home screen doesn't share Safari's sign-in.\n"
+                      f"Open the app and paste the key there (the part after key=).\n")
+            print(f"The token isn't shown again. `orgwarrior-web token revoke {args.name}` cuts it off.")
         elif args.cmd == "list":
             listed = tokens.load()
             if not listed:
-                print("No tokens. `orgwarrior-web token add NAME` makes one.")
+                print("There are no tokens yet. `orgwarrior-web token add NAME` makes one.")
             for name, t in listed.items():
                 print(f"{name:20} {t['scope']:10} made {t['created']}")
         else:

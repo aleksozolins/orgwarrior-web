@@ -17,14 +17,14 @@ MINUTES = {"h": 60, "d": 1440, "w": 7 * 1440, "m": 30 * 1440, "y": 365 * 1440}
 def options(table: dict) -> dict:
     """[web.calendar] over the defaults, checked at startup like the tabs."""
     if unknown := set(table) - set(DEFAULTS):
-        raise ConfigError(f"unknown key [web.calendar] {sorted(unknown)[0]!r}")
+        raise ConfigError(f"[web.calendar] has no key {sorted(unknown)[0]!r}")
     for key in ("keywords", "deadlines", "alarms"):
         if not isinstance(table.get(key, True), bool):
-            raise ConfigError(f"[web.calendar] {key} is true or false")
+            raise ConfigError(f"[web.calendar] {key} has to be true or false")
     if not isinstance(table.get("deadline_prefix", ""), str):
-        raise ConfigError('[web.calendar] deadline_prefix is text: "Due: ", or "" for none')
+        raise ConfigError('[web.calendar] deadline_prefix has to be text, like "Due: ", or "" for nothing')
     if not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", str(table.get("alarm_time", "09:00"))):
-        raise ConfigError('[web.calendar] alarm_time is a time of day: "09:00"')
+        raise ConfigError('[web.calendar] alarm_time has to be a time of day, like "09:00"')
     return {**DEFAULTS, **table}
 
 

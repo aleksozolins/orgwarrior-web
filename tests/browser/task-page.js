@@ -243,7 +243,7 @@ await run(async t => {
   await page.waitForSelector(`.task[data-id="${appt}"][data-ro]`);
   await longPress("Dentist appointment");
   await check("its menu: Open, nothing to change",
-    await page.$eval("#sheet", s => s.textContent.includes("Read only") && !s.querySelector("[data-do]:not([data-do=open])")));
+    await page.$eval("#sheet", s => s.textContent.includes("is read only, because") && !s.querySelector("[data-do]:not([data-do=open])")));
   await page.keyboard.press("Escape");
   await expect("closed", s => !s.sheet);
 });

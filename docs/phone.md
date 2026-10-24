@@ -29,42 +29,30 @@ This gets you a certificate for the server's IP address, so no domain is
 needed. Your own small certificate authority (CA) signs it, you serve it
 with `--cert` and `--key`, and you tell each device to trust the CA.
 
-[mkcert](https://github.com/FiloSottile/mkcert) does it in one line
-(`mkcert 10.0.0.5`), but its CA can vouch for any website, so you'd need
-to guard its key like a password. With openssl you can limit the CA to
-your server's address, so a leaked key can't be used to impersonate
-anything else:
-
 ```sh
-ip=10.0.0.5
-mkdir -p ~/.local/share/orgwarrior-web/tls && chmod 700 ~/.local/share/orgwarrior-web/tls
-cd ~/.local/share/orgwarrior-web/tls
-umask 077
-openssl ecparam -name prime256v1 -genkey -noout -out ca.key
-openssl req -x509 -new -key ca.key -sha256 -days 3650 -out ca.crt \
-  -subj "/CN=orgwarrior-web CA" \
-  -addext "basicConstraints=critical,CA:TRUE,pathlen:0" \
-  -addext "keyUsage=critical,keyCertSign,cRLSign" \
-  -addext "nameConstraints=critical,permitted;IP:$ip/255.255.255.255"
-openssl ecparam -name prime256v1 -genkey -noout -out server.key
-openssl req -new -key server.key -subj "/CN=$ip" |
-  openssl x509 -req -CA ca.crt -CAkey ca.key -CAcreateserial -sha256 -days 1825 \
-    -extfile <(printf 'basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature\nextendedKeyUsage=serverAuth\nsubjectAltName=IP:%s\n' $ip) \
-    -out server.crt
-chmod 644 ca.crt server.crt
+orgwarrior-web cert 10.0.0.5
 ```
 
-To add another address later (a VPN address, say), you'd add it to the
-CA's `nameConstraints` and the server's `subjectAltName`. That means a new
-CA, installed again on each device.
+It writes `ca.crt`, `ca.key`, `server.crt` and `server.key` to
+`~/.local/share/orgwarrior-web/tls/` and prints the options to serve them
+with. The CA can only vouch for the addresses you give it, so even if its
+key leaked, it couldn't be used to impersonate any other site. If the
+server is reached at more than one address (a VPN address too, say), give
+them all: `orgwarrior-web cert 10.0.0.5 10.8.0.1`. Adding one later means
+running it again with `--force`, which makes a new CA to trust again on
+each device.
+
+To get `ca.crt` onto a device, open `https://10.0.0.5:22546/ca.crt` in its
+browser. It warns that the connection isn't private, since the CA isn't
+trusted yet. Go ahead anyway and download the file.
 
 Then install `ca.crt` on each device:
 
 - **Android**: Settings → Security → More security settings → Encryption
   & credentials → Install a certificate → CA certificate. Android may then
   warn that the network "may be monitored". That's just the CA you added.
-- **iPhone**: open the file (emailing it to yourself works) and install
-  the profile in Settings. Then turn it on under Settings → General →
+- **iPhone**: open the file in Safari and install the profile in
+  Settings. Then turn it on under Settings → General →
   About → Certificate Trust Settings. Until you do, it's installed but not
   trusted.
 - **Mac**: add it to the System keychain in Keychain Access, open it, and

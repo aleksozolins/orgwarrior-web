@@ -196,7 +196,7 @@ def parse_key(word: str) -> str:
     mods, rest = set(), word
     while len(rest) > 2 and rest[1] == "-" and rest[0] in MODS:
         if rest[0] in mods:
-            raise KeysError(f"{word!r}: {rest[0]}- twice")
+            raise KeysError(f"{word!r} has {rest[0]}- twice")
         mods.add(rest[0])
         rest = rest[2:]
     if rest in NAMED:
@@ -209,11 +209,11 @@ def parse_key(word: str) -> str:
             base, mods = rest.lower(), mods | {"S"}
         elif "S" in mods and not mods & {"C", "M", "s"}:
             if not rest.isalpha():
-                raise KeysError(f"{word!r}: write the character Shift makes, not S-")
+                raise KeysError(f"{word!r}: write the character Shift makes (like T or $), not S-")
             base, mods = rest.upper(), mods - {"S"}
     else:
-        raise KeysError(f"{word!r} isn't a key: a character, RET SPC TAB ESC DEL, or <down> <f5>…, "
-                        "after C- M- S- s- if any")
+        raise KeysError(f"{word!r} isn't a key. Write a character, RET SPC TAB ESC DEL, or a name "
+                        "like <down> or <f5>, with C- M- S- s- in front if you want them")
     return "".join(MODS[m] for m in MOD_ORDER if m in mods) + base
 
 
@@ -221,7 +221,7 @@ def parse_sequence(spec: str) -> str:
     """A key or a sequence (`d d`, `dd`, `C-c C-s`), canonical: its keys apart."""
     words = spec.split()
     if not words:
-        raise KeysError("an empty key")
+        raise KeysError("a key can't be empty")
     keys = []
     for w in words:
         # A word of plain characters is one key a character, as kbd reads it.
@@ -232,11 +232,11 @@ def parse_sequence(spec: str) -> str:
     seq = " ".join(keys)
     for i, k in enumerate(keys):
         if k in PAGE_KEEPS:
-            raise KeysError(f"{spec!r}: {k} is the page's own (Esc always cancels, Tab moves and folds)")
+            raise KeysError(f"{spec!r} uses {k}, which the page keeps for itself (Esc always cancels, Tab moves and folds)")
         if k in BROWSER_KEEPS:
-            raise KeysError(f"{spec!r}: the browser keeps {k}; a page can't have it")
+            raise KeysError(f"{spec!r} uses {k}, which the browser keeps for itself")
     if len(keys) > 3:
-        raise KeysError(f"{spec!r}: three keys at most")
+        raise KeysError(f"{spec!r} is too long. A sequence can be three keys at most")
     return seq
 
 
@@ -247,7 +247,7 @@ def _keys_of(value, where: str) -> list[str]:
     elif isinstance(value, list) and all(isinstance(v, str) for v in value):
         specs = value
     else:
-        raise KeysError(f'{where}: a key ("t"), or a list of them (["t", "C-c C-t"]; [] for none)')
+        raise KeysError(f'{where} has to be a key ("t"), a list of them (["t", "C-c C-t"]), or [] for none')
     try:
         return list(dict.fromkeys(parse_sequence(s) for s in specs))
     except KeysError as e:
@@ -260,18 +260,18 @@ def _layer(table: dict, where: str) -> dict[str, list[str]]:
     for name, value in table.items():
         if name not in BY_NAME:
             near = [a for a in BY_NAME if a.startswith(name[:3])][:3]
-            raise KeysError(f"{where}: no action {name!r}" + (f" (there's {', '.join(near)})" if near else ""))
+            raise KeysError(f"{where}: there's no action {name!r}" + (f". Did you mean {', '.join(near)}?" if near else ""))
         keys = _keys_of(value, f"{where} {name}")
         for i, k in enumerate(keys):
             for o in keys[i + 1:]:
                 if _clashes(k, o):
-                    raise KeysError(f"{where} {name}: {k!r} and {o!r}: one starts the other")
+                    raise KeysError(f"{where} {name}: {k!r} and {o!r} can't both be keys, since one starts the other")
         for k in keys:
             for other, theirs in seen.items():
                 for o in theirs:
                     if o == k or o.startswith(k + " ") or k.startswith(o + " "):
-                        raise KeysError(f"{where}: {k!r} ({name}) and {o!r} ({other}): "
-                                        + ("one key, two actions" if o == k else "one starts the other"))
+                        raise KeysError(f"{where}: {k!r} ({name}) and {o!r} ({other}) "
+                                        + ("are the same key on two actions" if o == k else "clash, since one starts the other"))
         seen[name] = keys
         out[name] = keys
     return out
@@ -290,7 +290,7 @@ def resolve(config: dict | None) -> dict:
     config = dict(config or {})
     preset = config.pop("preset", None)
     if preset is not None and preset not in PRESETS:
-        raise KeysError(f"[web.keys] preset: {preset!r} isn't one ({', '.join(PRESETS)})")
+        raise KeysError(f"[web.keys] preset {preset!r} doesn't exist. The presets are: {', '.join(PRESETS)}")
     keys = {a.name: [parse_sequence(k) for k in a.keys] for a in ACTIONS}
     layers = ([(_layer(PRESETS[preset], f"preset {preset}"), f"preset {preset}")] if preset else []) \
         + [(_layer(config, "[web.keys]"), "[web.keys]")]
