@@ -1,6 +1,6 @@
 [project]
 name = "orgwarrior-web"
-version = "0.4.2"
+version = "0.4.3"
 description = "The org agenda on a phone: a small web page over orgwarrior's engine"
 requires-python = ">=3.11"
 readme = "README.md"

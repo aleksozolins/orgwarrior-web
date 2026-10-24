@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.3 (2026-10-24)
+
+From a newcomer's second run through the quick start:
+
+- A key used where it can't go says what it's for ("This key can only add
+  to the inbox", "This key only opens the calendar feed") instead of "This
+  device isn't signed in".
+- `orgwarrior-web cert --port N` prints its commands with the port you'll
+  serve on.
+- The quick start's uninstall step gives the pipx command too.
+
 ## 0.4.2 (2026-10-24)
 
 Needs orgwarrior 0.4.2.
