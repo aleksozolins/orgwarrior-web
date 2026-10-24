@@ -93,3 +93,9 @@ def test_service_checks_options(capsys):
     assert setup.service_main(["--port", "22600"], server_parser()) == 0
     out = capsys.readouterr()
     assert "--port 22600" in out.out and out.err == ""  # not a file: the comments say it all
+
+
+def test_service_warns_about_a_temporary_copy(monkeypatch, capsys):
+    monkeypatch.setattr(setup.shutil, "which", lambda name: "/home/sam/.cache/uv/archive-v0/x/bin/orgwarrior-web")
+    assert setup.service_main([], server_parser()) == 0
+    assert "is a temporary copy" in capsys.readouterr().err

@@ -208,6 +208,12 @@ def service_main(argv: list[str], server_parser: argparse.ArgumentParser,
     command = shutil.which(name) or os.path.abspath(sys.argv[0])
     text, start = service_text(command, options, name=name)
     print(text, end="", flush=True)
+    # uvx puts a throwaway environment first on PATH: a unit pointing there
+    # stops working when uv clears its cache.
+    if "/uv/archive-" in command:
+        print(f"Warning: {command} is a temporary copy. Install {name} (uv tool install {name}, "
+              f"or Homebrew, or the AUR) and run this again, so the service points at it.",
+              file=sys.stderr)
     # Saved to a file, the comments aren't on screen: say what's next.
     try:
         to_file = stat.S_ISREG(os.fstat(sys.stdout.fileno()).st_mode)
