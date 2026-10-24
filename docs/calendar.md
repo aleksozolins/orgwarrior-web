@@ -80,13 +80,21 @@ script keeps up to date.
    org=~/org/google.org
    curl -fsS "$url" -o "$org.ics" || exit 1
    chmod u+w "$org" 2>/dev/null
-   ical2orgpy "$org.ics" "$org"
+   ical2orgpy -e you@example.com "$org.ics" "$org"   # -e: leave out events you declined
    chmod a-w "$org"
    rm -f "$org.ics"
    ```
 
 3. **Run it on a schedule**, every 15 minutes or so, from cron or a
    systemd timer.
+
+ical2orgpy copies titles and descriptions into org as they are, so org
+reads them as org. A meeting called "TODO review" shows up as a TODO, a
+title ending in `:word:` gets a tag, and a line in a description that
+starts with `*` becomes a heading of its own. Calendars you keep yourself
+are usually fine; invites from other people can come out messy. It also
+expands repeating events for 90 days on either side of today (`--days`
+changes that), and tags them `:RECURRING:`.
 
 Because the file isn't writable, orgwarrior treats it as a copy of
 another calendar. Its events show up everywhere, marked read only, but
