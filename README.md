@@ -65,7 +65,8 @@ pipx install orgwarrior-web                # Python 3.11+, or: uv tool install o
 
 With pipx or uv, install just one of the three packages. If you already
 installed orgwarrior on its own, uninstall it first (`uv tool uninstall
-orgwarrior`), since this one brings its own copy. If you'll want Claude
+orgwarrior`, or `pipx uninstall orgwarrior`), since this one brings its own
+copy. If you'll want Claude
 too, install [orgwarrior-mcp](https://github.com/aleksozolins/orgwarrior-mcp)
 instead, which brings both.
 

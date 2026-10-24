@@ -534,6 +534,10 @@ def test_add_token(tmp_path, monkeypatch, capsys):
                      "/api/refile-places?ids=c1", "/api/file?f=x.org", "/api/add-places"):
             assert call(path, robin)[0] == 401, path
         assert call("/api/act", robin, {"ids": ["c1"], "verb": "done"})[0] == 401
+        # Refused, it says what the key is for; a key nobody made, to sign in.
+        assert "only add to the inbox" in call("/api/view?q=all", robin)[1]["error"]
+        assert "calendar feed" in call("/api/view?q=all", cal)[1]["error"]
+        assert "isn't signed in" in call("/api/view?q=all", "nope")[1]["error"]
         assert call("/api/run", robin, {"line": "add x"})[0] == 401
         assert call("/api/tabs", robin, {"op": "add", "label": "x", "query": "x"})[0] == 401
         assert call("/api/entry", robin, {"id": "c1", "text": "", "old": ""})[0] == 401

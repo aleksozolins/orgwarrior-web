@@ -86,6 +86,8 @@ def cert_main(argv: list[str]) -> int:
                     "and any others it's reached at (a VPN address, say)")
     ap.add_argument("--dir", type=Path, default=None, help=f"where to write the files (default {tls_dir()})")
     ap.add_argument("--force", action="store_true", help="replace a CA made before")
+    ap.add_argument("--port", type=int, default=22546,
+                    help="the port you'll serve on, for the commands it prints (default 22546)")
     args = ap.parse_args(argv)
     folder = args.dir or tls_dir()
     try:
@@ -101,10 +103,11 @@ def cert_main(argv: list[str]) -> int:
         return 1
     host, shown = args.address[0], _tilde(folder)
     url_host = f"[{host}]" if ":" in host else host  # IPv6, bracketed in a URL
+    port = f" --port {args.port}" if args.port != 22546 else ""
     print(f"Made a CA and a certificate for {', '.join(args.address)} in {shown}.\n\n"
           f"Serve the page with them:\n\n"
-          f"  orgwarrior-web --host {host} --cert {shown}/server.crt --key {shown}/server.key\n\n"
-          f"Then trust the CA on each device. Open https://{url_host}:22546/ca.crt on it\n"
+          f"  orgwarrior-web --host {host}{port} --cert {shown}/server.crt --key {shown}/server.key\n\n"
+          f"Then trust the CA on each device. Open https://{url_host}:{args.port}/ca.crt on it\n"
           f"(the browser warns until the CA is trusted) and install the file. docs/phone.md\n"
           f"says how for Android, iPhone, Mac, Windows and Linux. Keep ca.key private:\n"
           f"it's what can make certificates for these addresses.")

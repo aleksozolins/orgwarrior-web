@@ -238,6 +238,7 @@ class Handler(BaseHTTPRequestHandler):
         found = token and self.tokens.find(token)
         if not found or found[1] not in scopes:
             self.cookie_token = None
+            self.wrong_scope = found[1] if found else None  # for refused() to say what it's for
             return False
         self.who, self.scope = found
         return True
@@ -277,9 +278,15 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
 
+    WRONG_SCOPE = {"add": "This key can only add to the inbox (POST /api/add).",
+                   "calendar": "This key only opens the calendar feed (/calendar.ics).",
+                   "mcp": "This key is for orgwarrior-mcp, not this page."}
+
     def refused(self):
-        self.send_json({"error": "This device isn't signed in. On the server, "
-                        "`orgwarrior-web token add NAME` prints a link: open it here."}, 401)
+        # Still 401, whatever the key: the page answers 401 with its sign-in screen.
+        why = self.WRONG_SCOPE.get(getattr(self, "wrong_scope", None))
+        self.send_json({"error": why or "This device isn't signed in. On the server, "
+                        "`orgwarrior-web token add NAME` prints a link. Open it here."}, 401)
 
     def get(self, url):
         query = parse_qs(url.query)
