@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1 (2026-10-24)
+
+- **docs/calendar.md explains showing another calendar in your agenda**:
+  get a Google, iCloud or work calendar's .ics link, convert it to a
+  read-only org file with ical2orgpy, and update it on a schedule. Its
+  events then show everywhere, can't be changed, and stay out of the
+  feed. The README points to it.
+
 ## 0.4.0 (2026-10-24)
 
 Needs orgwarrior 0.4.0.

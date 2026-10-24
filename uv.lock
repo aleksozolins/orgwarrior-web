@@ -22,7 +22,7 @@ wheels = [
 
 [[package]]
 name = "orgwarrior"
-version = "0.4.0"
+version = "0.4.1"
 source = { editable = "../orgwarrior" }
 
 [package.metadata]
@@ -32,7 +32,7 @@ dev = [{ name = "pytest" }]
 
 [[package]]
 name = "orgwarrior-web"
-version = "0.4.0"
+version = "0.4.1"
 source = { editable = "." }
 dependencies = [
     { name = "orgwarrior" },
