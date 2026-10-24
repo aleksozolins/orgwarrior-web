@@ -55,3 +55,45 @@ Times have no time zone. They're in the device's own time, as in org.
 iCalendar has no way to say org's `.+` and `++` repeaters, so they become
 plain repeats from the current date. The date moves when you mark the
 task done.
+
+## Showing another calendar in your agenda
+
+The feed goes from org to your calendar app. The other direction works
+too: a Google, iCloud or work calendar can show up in your agenda, in the
+`orgwarrior` command and on the page, as a read-only org file that a
+script keeps up to date.
+
+1. **Get the calendar as an .ics link.** Google Calendar gives each
+   calendar a private one: Settings → the calendar → Integrate calendar →
+   "Secret address in iCal format". iCloud and most other calendars have a
+   similar subscription link. (If you'd rather sync the calendar's files
+   with [vdirsyncer](https://vdirsyncer.pimutils.org/), that works too.)
+2. **Convert it to org.** [ical2orgpy](https://github.com/ical2org-py/ical2org.py)
+   turns an .ics file into an org file, repeating events included. Write
+   the result somewhere in your `org-agenda-files` and make it read only.
+   A script like this does both:
+
+   ```sh
+   #!/bin/sh
+   # Google Calendar → ~/org/google.org, read only.
+   url="https://calendar.google.com/calendar/ical/…/basic.ics"   # your secret address
+   org=~/org/google.org
+   curl -fsS "$url" -o "$org.ics" || exit 1
+   chmod u+w "$org" 2>/dev/null
+   ical2orgpy "$org.ics" "$org"
+   chmod a-w "$org"
+   rm -f "$org.ics"
+   ```
+
+3. **Run it on a schedule**, every 15 minutes or so, from cron or a
+   systemd timer.
+
+Because the file isn't writable, orgwarrior treats it as a copy of
+another calendar. Its events show up everywhere, marked read only, but
+nothing can change them, they're never offered as places to refile or add
+to, and this feed leaves them out, so a calendar app that shows the
+original doesn't show them twice. Make changes in the original calendar,
+and they arrive with the next run.
+
+Keep the secret address private: anyone who has it can read that
+calendar.

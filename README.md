@@ -278,7 +278,9 @@ orgwarrior-web token add calendar --calendar --url https://10.0.0.5:22546
 
 [docs/calendar.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/calendar.md)
 covers subscribing from Android, iPhone and desktop apps, and the feed's
-options (`[web.calendar]`).
+options (`[web.calendar]`). It also explains the other direction: showing
+a Google or other calendar in your agenda, as a read-only org file a
+script keeps up to date.
 
 ## A second instance
 
