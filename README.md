@@ -53,14 +53,21 @@ You'll need Emacs 29 or later with its server running and your org
 settings loaded: `emacs --daemon`, your system's Emacs service, or
 `(server-start)` in your init file
 ([orgwarrior's quick start](https://github.com/aleksozolins/orgwarrior#quick-start)
-has the details, Mac included). Then install it one of these ways. Each
-one gives you both the page and the `orgwarrior` command:
+has the details, Mac included, and a starter init file). Then install it
+one of these ways. Each one gives you both the page and the `orgwarrior`
+command:
 
 ```sh
 brew install aleksozolins/tap/orgwarrior   # macOS or Linux
 yay -S orgwarrior-web                      # Arch, with any AUR helper
-pipx install orgwarrior-web                # Python 3.11+; uv tool install works too
+pipx install orgwarrior-web                # Python 3.11+, or: uv tool install orgwarrior-web
 ```
+
+With pipx or uv, install just one of the three packages. If you already
+installed orgwarrior on its own, uninstall it first (`uv tool uninstall
+orgwarrior`), since this one brings its own copy. If you'll want Claude
+too, install [orgwarrior-mcp](https://github.com/aleksozolins/orgwarrior-mcp)
+instead, which brings both.
 
 Check your setup, then start it and open <http://127.0.0.1:22546/>:
 
@@ -99,11 +106,8 @@ orgwarrior-web --host 10.0.0.5 --cert ~/.local/share/orgwarrior-web/tls/server.c
 ### Updating
 
 Update with the tool you installed with: `brew upgrade`, your AUR helper,
-or `pipx upgrade orgwarrior-web`. Both commands update together. With pipx
-or uv, if you installed orgwarrior on its own first, uninstall it before
-installing this, since orgwarrior-web brings its own copy. If you want
-[orgwarrior-mcp](https://github.com/aleksozolins/orgwarrior-mcp) too,
-install that instead, because it brings both.
+`pipx upgrade orgwarrior-web` or `uv tool upgrade orgwarrior-web`. Both
+commands update together.
 
 ## A tour
 
@@ -334,12 +338,13 @@ mkdir -p ~/.config/systemd/user
 orgwarrior-web service --host 10.0.0.5 --cert ~/.local/share/orgwarrior-web/tls/server.crt \
   --key ~/.local/share/orgwarrior-web/tls/server.key \
   > ~/.config/systemd/user/orgwarrior-web.service
-systemctl --user enable --now orgwarrior-web
+systemctl --user daemon-reload && systemctl --user enable --now orgwarrior-web
 loginctl enable-linger "$USER"   # keeps it (and Emacs) running when you're logged out
 ```
 
 The unit starts after `emacs.service`, the user unit that comes with
-Emacs. If you start your daemon some other way, drop the `After=` and
+Emacs (`systemctl --user enable --now emacs`). If you start your daemon
+some other way, like `emacs --daemon` by hand, drop the `After=` and
 `Wants=` lines. On a Mac, save the output as
 `~/Library/LaunchAgents/orgwarrior-web.plist` and start it with
 `launchctl bootstrap gui/$UID ~/Library/LaunchAgents/orgwarrior-web.plist`.

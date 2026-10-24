@@ -51,8 +51,9 @@ Then install `ca.crt` on each device:
 - **Android**: Settings → Security → More security settings → Encryption
   & credentials → Install a certificate → CA certificate. Android may then
   warn that the network "may be monitored". That's just the CA you added.
-- **iPhone**: open the file in Safari and install the profile in
-  Settings. Then turn it on under Settings → General →
+- **iPhone**: open the file in Safari, then install the profile under
+  Settings → General → VPN & Device Management. Then turn it on under
+  Settings → General →
   About → Certificate Trust Settings. Until you do, it's installed but not
   trusted.
 - **Mac**: add it to the System keychain in Keychain Access, open it, and
@@ -61,11 +62,13 @@ Then install `ca.crt` on each device:
 - **Windows**: Install Certificate → Local Machine → Trusted Root
   Certification Authorities. Pick that store yourself rather than letting
   Windows choose.
-- **Arch Linux**: `sudo trust anchor ca.crt`. Chrome reads it, and so does
-  Firefox when it uses the system's certificates. A Firefox with its own
-  certificate store needs it imported too: Settings → Certificates → View
+- **Linux**: on Arch or Fedora, `sudo trust anchor ca.crt`. On Debian or
+  Ubuntu, `sudo cp ca.crt /usr/local/share/ca-certificates/orgwarrior-web.crt`
+  and then `sudo update-ca-certificates`. Browsers don't always read the
+  system's list: if Chrome or Firefox still warns, import the file in its
+  own certificate settings (in Firefox, Settings → Certificates → View
   Certificates → Authorities → Import, and check "Trust this CA to
-  identify websites".
+  identify websites").
 
 The browser treats the `https://` address as a new site, so sign in again
 with a link made for it, and reinstall the app.

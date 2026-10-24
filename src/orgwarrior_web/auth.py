@@ -110,6 +110,12 @@ def token_main(argv: list[str]) -> int:
             elif args.calendar:
                 print(f"Subscribe to this in the calendar app (ICSx\u2075 on Android):\n\n"
                       f"  {base}/calendar.ics?key={token}\n")
+            elif args.add:
+                print(f"Send this link to {args.name}. Opened once, it stays signed in on that device,\n"
+                      f"and it can only add to your inbox:\n\n"
+                      f"  {base}/?key={token}\n\n"
+                      f"On an iPhone, an app on the home screen doesn't share Safari's sign-in.\n"
+                      f"Open the app and paste the key there (the part after key=).\n")
             else:
                 print(f"Open this link once on {args.name}, and it stays signed in:\n\n"
                       f"  {base}/?key={token}\n\n"
