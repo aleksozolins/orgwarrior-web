@@ -1,9 +1,10 @@
 // Structure: refile into a new heading, keywords on any heading, reorder,
-// a file's outline, + Add and the + offering where you are, Move.
-import {run, base} from "./lib.js";
+// a file's outline, + Add and the + offering where you are, Move; a row
+// acted on stays in place, dimmed, until a reload.
+import {run, base, WIDE} from "./lib.js";
 
 await run(async t => {
-  const {page, fail, expect, check, idOf, tap, go, back, typeInto, waitFor, taskOf, sheetGone, longPress, clickRow, post} = t;
+  const {page, fail, expect, check, idOf, tap, go, back, typeInto, waitFor, taskOf, sheetGone, longPress, clickRow, post, cursorTo} = t;
   await page.goto(`${base}/#/v/today`);
   await page.waitForSelector(".task[data-id]");
   // Long press → Schedule: the second sheet opens once the menu's is gone.
@@ -167,4 +168,42 @@ await run(async t => {
     && /Show \d+ more/.test(await page.$eval("#detail [data-more]", b => b.textContent)));
   await tap("#detail [data-more]");
   await check("Show more: all of them", await page.$$eval("#detail .kids .rows > .task", rs => rs.every(r => r.offsetParent)));
+
+  // Out of the view by an action: the row kept, dimmed, the cursor on it, so
+  // the next key acts on it; a refile follows its new ID; g lets it go.
+  await go("#/v/todo");
+  await page.waitForFunction(() => document.querySelector("#list")?.textContent.includes("Buy batteries"), {timeout: 5000});
+  await cursorTo("Buy batteries");
+  const unfiled = await page.$eval("#list .task.cursor", r => r.dataset.id);
+  await page.keyboard.press("t");
+  await page.waitForSelector("#sheet [data-kw]");
+  await page.keyboard.press("n");
+  const keptRow = () => page.evaluate(() => {
+    const r = [...document.querySelectorAll("#list .task.kept")].find(r => r.textContent.includes("Buy batteries"));
+    return r && {id: r.dataset.id, text: r.textContent, cursor: r.classList.contains("cursor")};
+  });
+  await waitFor(() => [...document.querySelectorAll("#list .task.kept")].some(r => /NEXT/.test(r.textContent) && r.textContent.includes("Buy batteries")),
+    "NEXT, out of the todo view: kept, its new state");
+  await check("...the cursor on it", (await keptRow())?.cursor);
+  await page.keyboard.press("w");
+  await page.waitForSelector("#rf-filter");
+  await page.keyboard.press("Enter");
+  await waitFor(() => !document.querySelector("#rf-filter"), "refiled");
+  await waitFor(before => (r => r && r.dataset.id !== before)(
+    [...document.querySelectorAll("#list .task.kept")].find(r => r.textContent.includes("Buy batteries"))), "refiled: still kept, its new ID", unfiled);
+  await check("...the cursor still on it", (await keptRow())?.cursor);
+  await page.keyboard.press("g");
+  await waitFor(() => !document.querySelector("#list")?.textContent.includes("Buy batteries"), "g: gone");
+  // Side by side, the task open beside it: g reloads the list too.
+  await page.setViewport(WIDE);
+  await page.waitForFunction(() => document.querySelector("#list")?.textContent.includes("Learn to juggle"), {timeout: 5000});
+  await cursorTo("Learn to juggle");
+  await page.waitForFunction(() => /juggle/.test(document.querySelector("#detail")?.textContent ?? ""), {timeout: 5000});
+  await page.keyboard.press("t");
+  await page.waitForSelector("#sheet [data-kw]");
+  await page.keyboard.press("n");
+  await waitFor(() => [...document.querySelectorAll("#list .task.kept")].some(r => r.textContent.includes("Learn to juggle")),
+    "side by side: kept");
+  await page.keyboard.press("g");
+  await waitFor(() => !document.querySelector("#list")?.textContent.includes("Learn to juggle"), "g with the task beside: gone");
 });

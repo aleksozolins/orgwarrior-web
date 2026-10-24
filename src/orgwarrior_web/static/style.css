@@ -216,6 +216,7 @@ pre.help { font: 13px/1.45 ui-monospace, "JetBrains Mono", monospace; white-spac
 @media (hover: none) and (pointer: coarse) { .keys-hint, .keys-only { display: none; } }
 .task.static { cursor: default; }
 .task.static:active { background: none; }
+.task.kept { opacity: .55; }  /* acted on, kept in place until a reload (app.js keepRows) */
 .reordering .task { display: flex; align-items: center; gap: 8px; }
 .reordering .task .title { flex: 1; min-width: 0; }
 .moves { display: flex; gap: 6px; }

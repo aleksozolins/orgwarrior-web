@@ -3,7 +3,7 @@
 import {run, base, PHONE, WIDE} from "./lib.js";
 
 await run(async t => {
-  const {page, fail, expect, check, idOf, tap, go, back} = t;
+  const {page, fail, expect, check, idOf, tap, go, back, post} = t;
   await page.goto(`${base}/#/v/all`);
   await page.waitForSelector(".task[data-id]");
   // On a desktop: a right-click is the long press, Escape is Back for a sheet,
@@ -164,6 +164,12 @@ await run(async t => {
   }, title);
   const appt = await row("Dentist appointment");
   await check("phone: the time before the title, no line above, no category", appt.time === "14:00" && appt.meta === null && appt.cat === null);
+  // An event without a time: first in its day, "all day" for its time.
+  await post("/api/add", {event: true, title: "Day off", when: "today"});
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#list")?.textContent.includes("Day off"), {timeout: 5000});
+  await check("all day: first in the day, said so", await page.$eval("#list .task[data-id]",
+    r => r.textContent.includes("Day off") && r.querySelector(".title > .time")?.textContent === "all day"));
   const touch = await page.evaluate(() => matchMedia("(hover: none) and (pointer: coarse)").matches);
   if (touch) await check("touch: no IDs on rows", await page.$$eval(".task .id", ids => ids.every(i => !i.offsetParent)));
   await page.setViewport(WIDE);

@@ -356,16 +356,28 @@ await run(async t => {
   await check("typed: the title", await page.$eval("#dr-title", i => i.value === "Drafted by keys" && document.activeElement === i));
   await page.keyboard.press("Enter");
   await check("Enter in the title: on to Add, focused, nothing added yet", await focusedIs("#sheet [data-a=add]"));
-  // ↑ from the title: up to the kind; e an event, on to the title; its When by s.
+  // ↑ from the title: up to the kind; ↓ back.  A digit typed in the title is
+  // the title's; 2 off it an event, the focus kept; its When by s.
   await page.focus("#dr-title");
   await page.keyboard.press("ArrowUp");
   await check("↑: up to the kind", await onKind("task"));
   await check("no @ among the card's keys", !(await page.$("#sheet [data-pick='@']")));
-  await page.keyboard.press("e");
-  await waitFor(() => /New event/.test(document.querySelector("#sheet .sheet-title")?.textContent ?? "")
-    && document.activeElement?.id === "dr-title" && /s when/.test(document.querySelector("#sheet .draft-keys")?.textContent ?? "")
-    && !/t state/.test(document.querySelector("#sheet .draft-keys")?.textContent ?? ""), "e: an event, on to the title, its keys its own");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.type(" 2");
+  await check("2 in the title: typed", await page.$eval("#dr-title", i => i.value === "Drafted by keys 2")
+    && /New task/.test(await page.$eval("#sheet .sheet-title", x => x.textContent)));
+  await page.keyboard.press("Backspace");
+  await page.keyboard.press("Backspace");
   await page.keyboard.press("Escape");
+  await page.keyboard.press("2");
+  await waitFor(() => /New event/.test(document.querySelector("#sheet .sheet-title")?.textContent ?? "")
+    && document.activeElement?.matches("#sheet [data-a=add]") && document.querySelector("#dr-title").value === "Drafted by keys"
+    && /s when/.test(document.querySelector("#sheet .draft-keys")?.textContent ?? "")
+    && !/t state/.test(document.querySelector("#sheet .draft-keys")?.textContent ?? ""), "2 off the title: an event, the focus kept, its keys its own");
+  await page.keyboard.press("3");
+  await waitFor(() => /New heading/.test(document.querySelector("#sheet .sheet-title")?.textContent ?? "")
+    && document.activeElement?.matches("#sheet [data-a=add]"), "3 off the title: a heading, the focus kept");
+  await page.keyboard.press("2");
   await page.keyboard.press("s");
   await sheetTitled("When");
   await check("the picker names the draft", await page.$eval("#sheet .sheet-title", x => x.textContent === "When · Drafted by keys"));
@@ -383,10 +395,10 @@ await run(async t => {
   await waitFor(() => /New task/.test(document.querySelector("#sheet .sheet-title")?.textContent ?? ""), "← ←: back to a task");
   await page.click('#sheet .kinds-row [data-kindset="heading"]');
   await waitFor(() => /New heading/.test(document.querySelector("#sheet .sheet-title")?.textContent ?? ""), "a click: a heading");
-  await page.keyboard.press("t");
-  await waitFor(() => /New task/.test(document.querySelector("#sheet .sheet-title")?.textContent ?? "")
-    && document.activeElement?.id === "dr-title", "t on the kind: a task, on to the title");
-  await page.keyboard.press("Escape");
+  await page.focus('#sheet .kinds-row [aria-pressed=true]');
+  await page.keyboard.press("1");
+  await waitFor(() => /New task/.test(document.querySelector("#sheet .sheet-title")?.textContent ?? ""), "1 on the kind: a task");
+  await check("...the focus on the kind still", await onKind("task"));
   await page.keyboard.press("t");
   await sheetTitled("State");
   await page.keyboard.press("n");

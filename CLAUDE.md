@@ -49,7 +49,10 @@ file, never committed, holds the maintainer's deployment and to-do.
   scanned for, and color alone says nothing to a colorblind reader. On
   touch, rows show no IDs (the keys' and the CLI's); a task's page always
   does. Not chosen: a preference between this and org's two-line rows
-  (one layout, as everywhere here).
+  (one layout, as everywhere here). An event without a time (the engine's
+  `all_day`) goes first in its day, "all day" for its time, as a calendar
+  has it (`allDayFirst`); org puts everything untimed after the grid, and
+  `org-agenda-sort-notime-is-late` would move untimed tasks up too.
 - **Now line**: the server turns the time grid on whatever the CLI's
   config says; the page drops empty hours and draws org's `now` line. A
   view showing it reloads in place every 5 minutes.
@@ -196,6 +199,12 @@ file, never committed, holds the maintainer's deployment and to-do.
   taps (no `currentTask`). An action redraws the page (`settle`); a
   refile's or rename's new ID is followed by `route(true)`, not a
   hashchange (a new ID can read the same).
+- **Kept rows**: a row an action took out of the view stays where it
+  was, dimmed, its new state and ID, the cursor on it (`keepRows`,
+  `restoreKept`), as org's agenda keeps its lines until `g`: done in the
+  inbox, then refiled. Gone at a real reload (another view, ↻ or `g`, back
+  on the tab), or once the view has it again; archive and kill keep none.
+  Not moved to where it now sorts: it stays put until the reload.
 
 ### Forms and saving
 - A tap that is a choice (a state, a quick date, Clear, a target, a box)
@@ -347,7 +356,11 @@ file, never committed, holds the maintainer's deployment and to-do.
   focused button in a sheet always shows its ring from the keys.
 - **Adding**: three ways, each its input's: the card (`c`, keys), the add
   page (touch, the share target), the box's one line (the syntax by
-  heart). Not chosen: one add for all (the three stay).
+  heart). Not chosen: one add for all (the three stay). The card's kinds
+  are `1` `2` `3` anywhere on it but the title, and its fields'
+  keys work from anywhere but the title (`e` was both event and
+  details). Digits are the tabs' keys by default, which mean nothing in
+  a sheet; a field rebound to a digit keeps it.
 
 ### Clocking
 - The header's strip shows only while a clock runs, so someone who

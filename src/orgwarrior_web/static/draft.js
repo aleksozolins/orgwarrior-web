@@ -1,9 +1,9 @@
 "use strict";
 
 // c: a new entry as a card at the bottom, opened in its title (a task by
-// default; ↑ from the title up to its kind: Task, Event, Heading), then filled
-// with the keys and sheets used on tasks (t , : s d E w, e the body), only
-// what's set shown.  Enter in the title goes on to Add;
+// default; 1 2 3 off the title its kind, Task, Event, Heading), then filled
+// with the keys and sheets used on tasks (t , : s d E w, e the body) from
+// anywhere on the card but the title, only what's set shown.  Enter in the title goes on to Add;
 // Enter adds; Esc drops it (asking, if anything's set).  Where: [add]'s
 // place, the cursor's task offered next ("Under …"), or any refile place.
 // AT picks one: "under" (a), a child of the cursor's task; "beside" (A), at
@@ -40,9 +40,8 @@ async function draftTask(at = null) {
   const fresh = JSON.stringify(d);
   const words = v => v && v !== "none" ? (v.date ?? v) : null;
   // The kind, a row at the top: the card opens in the title below it (a
-  // task); ↑ or Shift-Tab from the title go up to it.  There t e h (or
-  // ←→) pick one, Enter, Tab or ↓ go back to the title, any other letter
-  // starts the title.
+  // task); ↑ or Shift-Tab from the title go up to it.  Its keys are digits,
+  // the tabs' by default (nothing in a sheet); a field bound to one keeps it.
   const KINDS = ["task", "event", "heading"], cap = k => k[0].toUpperCase() + k.slice(1);
   const kind = () => d.event ? "event" : d.keyword ? "task" : "heading";
   const toTask = () => {
@@ -79,9 +78,7 @@ async function draftTask(at = null) {
     const firstLine = d.body?.trim().split("\n")[0];
     return {
       title: `New ${k}`,
-      // Their keys work on the row only (its onkeydown), not as fast keys: t
-      // and e out there are the state and the body.
-      kinds: KINDS.map(x => `<button data-kindset="${x}" aria-pressed="${x === k}">${cap(x)}${fastHint(x[0])}</button>`).join(""),
+      kinds: KINDS.map((x, i) => `<button data-kindset="${x}" aria-pressed="${x === k}">${cap(x)}${fastHint(String(i + 1))}</button>`).join(""),
       draft: `${line ? `<div class="dr-head">${line}</div>` : ""}
         ${k === "event" ? row("When", esc(d.when ?? "pick a date"), !d.when)  // an event's is asked at Add if not set
           : [d.scheduled && row("Scheduled", esc(d.scheduled)), d.deadline && row("Deadline", esc(d.deadline)),
@@ -119,26 +116,32 @@ async function draftTask(at = null) {
       const b = e.target.closest("[data-pick], [data-a=add]");
       if (b) finish({title: title(), pick: b.dataset.pick});
     }, () => title().trim() !== d.title.trim() || JSON.stringify({...d, title: ""}) !== JSON.stringify({...JSON.parse(fresh), title: ""}));
+    // 1 2 3 anywhere on the card but the title; the focus stays where it was.
+    sheet.querySelector(".sheet-body").onkeydown = e => {
+      const n = /^[123]$/.exec(e.key)?.[0];
+      if (!n || e.ctrlKey || e.metaKey || e.altKey || e.target === titleEl()
+          || bindingsOf(keysFor(kind()).map(([action]) => action))[0].has(n)) return;
+      e.preventDefault();
+      const onRow = !!e.target.closest(".kinds-row");
+      setKind(KINDS[n - 1]);
+      paint();
+      if (onRow) kindButton().focus();
+    };
+    // On the kinds: ← → step through them; Enter, Tab or ↓ back to the
+    // title; the fields' keys work here too.
     const row = sheet.querySelector(".kinds-row");
     row.onkeydown = e => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const at = KINDS.indexOf(kind()), step = {ArrowRight: 1, ArrowLeft: -1}[e.key];
-      const pick = {t: "task", e: "event", h: "heading"}[e.key];
       if (step) {
         e.preventDefault();
         setKind(KINDS[(at + step + 3) % 3]);
         paint();
         return kindButton().focus();
       }
-      if (pick || ["Enter", "ArrowDown"].includes(e.key) || (e.key === "Tab" && !e.shiftKey)) {
+      if (["Enter", "ArrowDown"].includes(e.key) || (e.key === "Tab" && !e.shiftKey)) {
         e.preventDefault();
-        if (pick) setKind(pick), paint();
         return titleEl().focus();
-      }
-      if (e.key.length === 1 && e.key !== " ") {  // the title's first letter
-        e.preventDefault();
-        titleEl().focus();
-        titleEl().value += e.key;
       }
     };
     // Enter in the title: on to Add, focused (Enter again adds); the keys work

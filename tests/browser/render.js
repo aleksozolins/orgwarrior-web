@@ -210,7 +210,7 @@ await run(async t => {
     && /Publish to PyPI/.test(document.querySelector("#list .task.cursor")?.textContent ?? ""), "^: out a level, the cursor on it");
   await page.keyboard.press("^");
   await waitFor(() => location.hash === "#/v/projects.org" && !document.querySelector("#list .crumbs")
-    && document.querySelector("#list .kids .section-title").textContent.startsWith("Outline"), "^ again: the whole file");
+    && (document.querySelector("#list .kids .section-title")?.textContent ?? "").startsWith("Outline"), "^ again: the whole file");
   await page.goBack();
   await waitFor(() => document.querySelector("#list .crumbs"), "Back: zoomed again");
   await page.click("#list .crumbs a.here");

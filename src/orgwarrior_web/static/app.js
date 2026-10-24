@@ -174,6 +174,7 @@ function painted(text, spans, from = 0, to = text.length, {links = [], box = nul
 // category side by side only: a phone hasn't the room); a line above it only
 // for a label that says something (In 2 d., Sched. 3x, Deadline), not the
 // bare "Scheduled" (org's default leader: a day's view is nearly all of them).
+// An event without a time says "all day" there.
 function itemRow(line) {
   const t = line.text, parts = t.split("\x1f");
   const [open, close] = line.id
@@ -183,7 +184,8 @@ function itemRow(line) {
     ? `<div class="habit">${painted(line.habit.text, line.habit.spans, 0, undefined, {habit: true})}</div>` : "";
   if (parts.length < 4) return `${open}<div class="title">${painted(t, line.spans)}</div>${habit}${close}`;
   const start = t.length - parts[3].length;
-  const [category, time, label] = [parts[0], parts[1].replace(/\.+$/, ""), parts[2].replace(/:\s*$/, "")].map(s => s.trim());
+  const [category, time, label] = [parts[0], parts[1].replace(/\.+$/, "").trim() || (line.all_day ? "all day" : ""),
+                                   parts[2].replace(/:\s*$/, "")].map(s => s.trim());
   const id = line.id ? `<span class="id">${esc(line.id)}</span>` : "";
   const said = label === "Scheduled" ? "" : label;
   return `${open}${said ? `<div class="meta"><span>${esc(said)}</span></div>` : ""}` +
@@ -272,6 +274,19 @@ function gridRow(line) {
 }
 const gridLine = line => !line.id && line.spans.some(s => s[2] === "grid" || s[2] === "now");
 
+// Each day's events without a time first, under its date line, as a
+// calendar has them; org puts everything without a time after the grid.
+function allDayFirst(lines) {
+  const out = [];
+  let at = -1;
+  for (const l of lines) {
+    if (l.date) out.push(l), at = out.length;
+    else if (l.all_day && at >= 0) out.splice(at++, 0, l);
+    else out.push(l);
+  }
+  return out;
+}
+
 // A day as "2026-10-12", and one moved by N days.
 const isoDate = d => [d.getFullYear(), d.getMonth() + 1, d.getDate()].map(v => String(v).padStart(2, "0")).join("-");
 function shiftDate(iso, n) {
@@ -348,12 +363,13 @@ async function showView(query, quiet) {
   markTab(query);
   // Another list: the keys start over, unless TAB from an agenda sent the cursor along (reveal).
   if (query !== listQuery) [cursor, revealCursor] = [revealCursor, null];
+  if (query !== listQuery || !quiet) kept = [];
   listQuery = query;
   if (FILE_QUERY.test(query) || zoom) return showFile(zoom?.[1] ?? query, quiet, zoom?.[2] ?? null);
   if (REPORT_QUERY.test(query)) return showReport(query, quiet);
   listForm = null;
   if (!quiet) list.innerHTML = `<div class="status">Loading…</div>`;
-  const seq = ++listSeq, lines = await api(`/api/view?q=${encodeURIComponent(query)}`);
+  const seq = ++listSeq, lines = allDayFirst(await api(`/api/view?q=${encodeURIComponent(query)}`));
   if (seq !== listSeq) return;  // a newer one was asked for: don't draw over it
   const dates = lines.filter(l => l.date).map(l => l.date);
   const step = CLOSED_QUERY.test(query) ? null
@@ -362,6 +378,7 @@ async function showView(query, quiet) {
     : l.id || l.text.includes("\x1f") ? itemRow(l) : otherRow(l, step, dates[0])).join("");
   const empty = !lines.some(l => !gridLine(l) && (l.id || l.text.includes("\x1f")));
   list.innerHTML = html + (empty ? `<div class="status">Nothing here.</div>` : "");
+  restoreKept();
   markPicked();
   markCurrent();
   if (clockReportOn && step) clockedUnder(seq, step === "day" ? dates[0] : `${dates[0]}..${shiftDate(dates[0], 6)}`);
@@ -381,6 +398,40 @@ async function clockedUnder(seq, span) {
     }).join(""));
   markPicked();
   markCurrent();
+}
+
+// After an action, the rows it acted on stay where they were, dimmed, as
+// org's agenda keeps its lines until g: done in the inbox, then refiled from
+// there.  Each {id, after (the row above's ID), index, html}; gone at a real
+// reload (another view, ↻, back on the tab), or once the view has it again.
+let kept = [];
+function keepRows(results) {
+  const rows = [...list.querySelectorAll(".task[data-id]")];
+  for (const r of results) {
+    const at = r.id ? rows.findIndex(row => sameId(row.dataset.id, r.old ?? r.id)) : -1;
+    if (at < 0) continue;
+    const row = rows[at].cloneNode(true), title = row.querySelector(".title");
+    row.dataset.id = r.id;
+    row.classList.add("kept");
+    row.classList.remove("picked", "current", "cursor");
+    for (const n of [...title.childNodes]) if (!n.matches?.(".id, .cat, .time")) n.remove();
+    title.querySelector(".id")?.replaceChildren(r.id);
+    const rest = r.keyword && r.heading.startsWith(r.keyword) ? r.heading.slice(r.keyword.length) : r.heading;
+    title.insertAdjacentHTML("beforeend", (r.keyword
+      ? `<span style="${styleFor(r.done ? "done" : "todo", r.keyword)}">${esc(r.keyword)}</span>` : "") + esc(rest));
+    kept = kept.filter(k => !sameId(k.id, r.old ?? r.id));
+    kept.push({id: r.id, after: rows[at - 1]?.dataset.id ?? null, index: at, html: row.outerHTML});
+  }
+}
+function restoreKept() {
+  const rows = () => [...list.querySelectorAll(".task[data-id]")];
+  kept = kept.filter(k => !rows().some(r => sameId(r.dataset.id, k.id)));
+  for (const k of [...kept].sort((a, b) => a.index - b.index)) {
+    const prev = k.after && rows().find(r => sameId(r.dataset.id, k.after)), next = rows()[k.index];
+    if (prev) prev.insertAdjacentHTML("afterend", k.html);
+    else if (next) next.insertAdjacentHTML("beforebegin", k.html);
+    else list.querySelector(".status")?.remove(), list.insertAdjacentHTML("beforeend", k.html);
+  }
 }
 
 // The marks on the rows just drawn: still marked after a reload.
@@ -596,10 +647,11 @@ async function route(quiet = false, again = false) {
       else if (!quiet) detail.scrollTop = 0;
       markCurrent();
       // Side by side the list shows too: opened straight on a task, the default
-      // view; refreshed in place, or after an add, which may be in it.
+      // view; refreshed in place, reloaded (↻), or after an add, which may be in it.
       const relist = justAdded !== null;
+      if (again) kept = [];
       if (listing) await listing;
-      else if (wide.matches && (listQuery === null || quiet || relist))
+      else if (wide.matches && (listQuery === null || quiet || again || relist))
         await showView(listQuery ?? "", listQuery !== null).catch(listError);
     }
     if (stale()) return;
@@ -630,7 +682,7 @@ let hiddenAt = 0;
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") hiddenAt = Date.now();
   else if (sheet.hidden && Date.now() - hiddenAt > 5000 && Date.now() - loadedAt > 30000)
-    route(true);
+    kept = [], route(true);
 });
 // A now line left on screen goes stale: move it along every few minutes.
 setInterval(() => {

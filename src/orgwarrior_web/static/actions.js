@@ -31,6 +31,7 @@ function settle(verb, results) {
   if (followed) cursor = followed.id;
   const gone = verb === "archive" || verb === "kill";
   if (gone) landAfter(results.map(r => r.id).filter(Boolean));
+  else if (!inFile()) keepRows(results);
   if (pageOf(h) === "task") {
     // An ID is the shortest prefix of the task's hash that no other task has:
     // it may have grown or shrunk since the page was loaded.
