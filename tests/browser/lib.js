@@ -99,6 +99,18 @@ function helpers(page) {
     }, v),
     longPress: async text => {
       const id = await idOf(text);
+      // The mouse on the row, as a finger would be: left where the last tap
+      // was (the floating +, outside main), a redraw under it sends a
+      // pointerleave that cancels the press.
+      for (let i = 0; ; i++) {
+        try {
+          await page.hover(`.task[data-id="${id}"]`);
+          break;
+        } catch (e) {  // a redraw just then, as clickRow's
+          if (i > 4 || !/detached/.test(e.message)) throw e;
+          await new Promise(r => setTimeout(r, 100));
+        }
+      }
       await page.$eval(`.task[data-id="${id}"]`, r => r.dispatchEvent(new PointerEvent("pointerdown", {bubbles: true})));
       await expect("long press opens the menu", s => s.sheet);
     },

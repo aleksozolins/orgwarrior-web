@@ -21,7 +21,8 @@ file, never committed, holds the maintainer's deployment and to-do.
   connection at a time: Safari opens connections ahead and leaves them
   idle, and each held every other request for the 30 s timeout.
 - **Files**: `server.py`, `auth.py` (tokens), `feed.py`, `sanitize.py`,
-  `keymap.py`, `setup.py` (`cert`, `service`), `jsonfile.py` (tokens.json, tabs.json: reread when changed,
+  `keymap.py`, `setup.py` (`cert`, `service`), `notify.py` (ntfy),
+  `jsonfile.py` (tokens.json, tabs.json, notify.json: reread when changed,
   written atomically). The page in `static/`, plain scripts sharing one
   scope, no build step, loaded in this order: `app.js` (API, routes,
   history, the list), `prefs.js`, `sheets.js` (`ask`, `toast`, pickers),
@@ -124,9 +125,30 @@ file, never committed, holds the maintainer's deployment and to-do.
   `tabs.json` beside tokens.json, for every device of the instance; never
   written into config.toml (often in git, a dotfiles manager would undo it, and the
   stdlib can't write TOML).
+- **Notifications** (`notify.py`, docs/notifications.md): ntfy, a JSON
+  POST (stdlib), any server (ntfy.sh, or one's own with a token). A
+  thread (`Watcher`, started by `main`, not `make_server`) asks the engine
+  once a minute, under `Server.lock`, for every entry with a FROM
+  (`entries_with` with no value) and diffs it with `notify-seen.json`:
+  kept on disk, so a restart neither resends nor misses what changed while
+  down; no file yet, it only notes. Entries are told apart by FROM and
+  CAPTURED, then title (a rename: the one left on each side). An arrival
+  (CAPTURED within 2 days: older is an unarchive or a restore) tells the
+  owner; a sent task reaching a done state or `[web.notify] states` tells
+  its sender, with the note logged for that state (`show`'s notes), only
+  while their add token exists. Polling, not a hook in Emacs: it catches
+  the page, the CLI, Claude and Syncthing alike, one place. Topics in
+  `notify.json` (0600: a ntfy.sh topic's name is its password), set from
+  the page, never config.toml: the owner's from a full token, a sender's
+  from their add token's capture page, each with the page's own origin
+  for the message's link (the server doesn't know its public address).
+  Saving sends a test first; one that fails isn't kept. Messages: title,
+  state, the sender, the note; never the body. Not chosen: web push (VAPID
+  and crypto outside the stdlib, iOS only for home-screen apps); email
+  (an SMTP setup per user).
 - `[web] name`: the capture page's wording, the tab title and the
   installed app's name (`ow · Sam`), so two instances on one phone tell
-  apart. `[web.tabs]`, `[web.keys]`, `[web.calendar]` checked at startup:
+  apart. `[web.tabs]`, `[web] counts`, `[web.keys]`, `[web.calendar]`, `[web.notify]` checked at startup:
   a typo stops the server, not the page.
 - **Calendar feed** (`feed.py`, the engine's `calendar` op; feed.py only
   writes text): open tasks and events, none from a read-only file (another
@@ -415,6 +437,13 @@ file, never committed, holds the maintainer's deployment and to-do.
   way); a step it offers is a button of its own, `RET` its hint.
 - The header's brand is as big as fits beside five tabs on a 412 px
   phone (a browser test checks). `[hidden]` always wins in the CSS.
+- **Counts** (`[web] counts`, a saved tab's `count`): the distinct IDs
+  its view lists, `/api/counts`, after every draw and every 2 minutes
+  while visible; `data-count` drawn by `::before` (the key hint is `::after`), ordered between label and hint, since a tab's text is
+  its label everywhere. Their sum is the app's badge (`setAppBadge`); an
+  iPhone shows it only with notification permission, asked from a tap
+  (Preferences' Allow, only in an iOS home-screen app, `navigator.standalone`, while undecided: elsewhere none is needed, and on Android it only offered notifications). Not for a file's
+  outline (refused at startup and in the sheet).
 
 ### Routes
 `/?key=`, `/calendar.ics`, `/healthz` (3 s, `ok` or 503 with the reason
@@ -422,7 +451,8 @@ in the journal), `/ca.crt` (public: the `ca.crt` beside `--cert`, for a
 phone to fetch before it trusts it), `/manifest.webmanifest`, and under `/api/`: `views`
 (`keymap` too; an add token gets mode and name only), `sent`, `view?q=`,
 `task/ID` (`?html=1`), `tags`, `refile-targets`, `refile-places`,
-`add-places`, `file?f=`, `clock`, `report?q=`; POST `act`, `clock`,
+`add-places`, `file?f=`, `clock`, `report?q=`, `counts`, `notify` (full
+or add); POST `notify` (full or add), `act`, `clock`,
 `clock-edit`, `wants-note`, `check`, `entry`, `tabs`, `reorder`, `run`
 (a line in orgwarrior's syntax, parsed by its own `cli.parse`; `help`
 shows its help text), `add`, `sign-in`. Errors are `{"error"}`. The hash

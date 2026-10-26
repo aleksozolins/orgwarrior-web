@@ -27,6 +27,9 @@ does all the org work.
 - **Each device signs in** on its own, and the page installs as an app.
   You can also let someone else add tasks to your list from their phone
   without seeing the rest of it.
+- **Know what's waiting.** A tab can show how many tasks it lists, on the
+  app's icon too. Through [ntfy](https://ntfy.sh), your phone hears when
+  someone sends you a task, and theirs hears when you finish it.
 
 ## How it fits
 
@@ -160,7 +163,8 @@ commands update together.
 - **Preferences** (⚙) are kept per device. The default theme is Modus
   Operandi or Vivendi Tinted, following the device's light or dark mode.
   Gruvbox, Solarized, Dracula and Nord are there too, and key hints can
-  show while typing, always or never.
+  show while typing, always or never. Notifications are set up there as
+  well ([Counts and notifications](#counts-and-notifications)).
 
 ## Configuration
 
@@ -176,12 +180,15 @@ problem is.
 |---|---|
 | `[web] name` | whose list this is. It's used in the tab title, the installed app's name (`ow · Sam`), and the page someone sharing your list sees. |
 | `[web.tabs]` | the tabs, in order, as `label = "query"` (anything the box takes). The default is today, week, all, then your `[views]`. |
+| `[web] counts` | the tabs that show how many tasks they list, by label: `counts = ["inbox"]`. See [Counts and notifications](#counts-and-notifications). |
+| `[web.notify]` | `states`: TODO keywords besides the done ones whose change tells the person who sent the task (`states = ["WAIT"]`). |
 | `[web.keys]` | a `preset` (`"evil"`) and keys of your own. See [Keys of your own](#keys-of-your-own). |
 | `[web.calendar]` | options for the calendar feed. See [Calendar feed](#calendar-feed). |
 
 ```toml
 [web]
 name = "Sam"
+counts = ["inbox"]        # the inbox tab shows how many tasks it lists
 
 [web.tabs]
 today = "today"
@@ -255,7 +262,24 @@ Under the form they see what they've sent, newest first: whether you've
 scheduled it, when it's due, and whether it's done (until you archive
 it). They can't see anything else on your list, not your keywords, notes
 or tags, or any of your own tasks. Set `[web] name` so their page says
-whose list it is.
+whose list it is. With notifications on, you hear when they send
+something, and they hear when you mark it done
+([Counts and notifications](#counts-and-notifications)).
+
+## Counts and notifications
+
+A tab can show how many tasks it lists (`[web] counts`, or a saved tab's
+own sheet), and the installed app shows the total on its icon where the
+platform allows it. Notifications go through [ntfy](https://ntfy.sh), a
+free app for Android and iPhone: you set up a topic under ⚙ →
+Notifications, and the server sends to it when someone sends you a task,
+or, on the page they add to your list from, when you mark what they sent
+done, with the note you wrote. It notices changes on its own once a
+minute, wherever they were made. Messages carry a task's title and state,
+never its details.
+[docs/notifications.md](https://github.com/aleksozolins/orgwarrior-web/blob/main/docs/notifications.md)
+walks through setting it up on both sides, and running your own ntfy
+server.
 
 ## On a phone
 

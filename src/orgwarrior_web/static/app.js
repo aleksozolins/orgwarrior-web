@@ -575,12 +575,31 @@ function markTab(query) {
 function drawTabs(list) {
   // Out of the Tab order (tabindex -1), as the logo: 1–9 and 0 reach them.
   tabs.innerHTML = list.map((t, i) => `<a href="#/v/${encodeURIComponent(t.query)}" data-query="${esc(t.query)}" tabindex="-1"${
-    i < 10 ? hintAttr(`tab-${i + 1}`) : ""}${
+    i < 10 ? hintAttr(`tab-${i + 1}`) : ""}${t.count ? " data-counted" : ""}${
     t.saved ? ` class="saved"` : ""}>${esc(t.label)}</a>`).join("") +
     `<button id="savetab" type="button" tabindex="-1" hidden aria-label="Save this view as a tab" title="Save this view as a tab">＋</button>`;
   markTab(listQuery);
   fadeTabs();
 }
+
+// The tabs with a count ([web] counts, or a saved tab's): how many tasks
+// each lists, read after each draw and every couple of minutes while shown;
+// their sum is the app's badge where the platform has one (an iPhone's
+// home-screen app, desktop browsers).
+async function refreshCounts() {
+  if (!tabs.querySelector("a[data-counted]")) return;
+  let counts;
+  try { counts = await api("/api/counts"); } catch (e) { return; }
+  let total = 0;
+  for (const a of tabs.querySelectorAll("a[data-counted]")) {
+    const n = counts[a.textContent];
+    if (n) a.dataset.count = n, total += n;
+    else delete a.dataset.count;
+  }
+  if ("setAppBadge" in navigator)
+    (total ? navigator.setAppBadge(total) : navigator.clearAppBadge()).catch(() => {});
+}
+setInterval(() => { if (document.visibilityState === "visible") refreshCounts(); }, 2 * 60000);
 
 // QUIET: refresh what's shown in place (no "Loading…", same scroll position),
 // both panes when they're side by side.  AGAIN: reload the view even if it's
@@ -656,6 +675,7 @@ async function route(quiet = false, again = false) {
     }
     if (stale()) return;
     loadedAt = Date.now();
+    refreshCounts();
     // The entry remembers its list: the address names a view or a task, never
     // both, and Back to a task must bring the list it was beside.
     if (entry && history.state?.key === entry && listQuery !== null) keep({list: listQuery});

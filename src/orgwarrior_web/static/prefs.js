@@ -14,6 +14,7 @@ async function openSettings() {
   sheet.classList.add("clear");
   sheet.querySelector(".settings-slot").append(settings);
   settings.hidden = false;
+  readNotify();
   gear.setAttribute("aria-expanded", "true");
   (settings.querySelector('[aria-checked="true"]') ?? settings.querySelector("button"))?.focus();
   await pending;
@@ -84,6 +85,74 @@ document.getElementById("clockreport").addEventListener("click", e => {
   const b = e.target.closest("[data-cr]");
   if (b) setClockReport(b.dataset.cr === "on");
 });
+// Notifications (ntfy, docs/notifications.md): kept on the server, which
+// sends them, for whoever this device is: the list's owner hears what's sent
+// to them, an add token's person what's done with what they sent.
+// OWNERNAME: whose list an add token adds to (showCapture's).
+let notifyState = null, ownerName = null;
+const notifyBox = document.getElementById("notify");
+async function readNotify() {
+  try { notifyState = await api("/api/notify"); } catch (e) { notifyState = null; }
+  notifyBox.hidden = !notifyState;
+  const b = notifyBox.querySelector("[data-a=notify]");
+  b.textContent = notifyState?.on ? `On: ${notifyState.topic.replace(/^https?:\/\//, "")}` : "Off: set up…";
+  b.setAttribute("aria-checked", String(!!notifyState?.on));
+  // An iPhone's home-screen app (navigator.standalone, Apple's own) shows a
+  // badge only once it may notify, asked from a tap; elsewhere a badge needs
+  // nothing, or there's none (Android), and asking would only offer notifications.
+  notifyBox.querySelector("[data-a=badge]").hidden = !(tabs.querySelector("a[data-counted]")
+    && navigator.standalone === true && "setAppBadge" in navigator && window.Notification?.permission === "default");
+}
+notifyBox.querySelector("[data-a=badge]").addEventListener("click", async () => {
+  await Notification.requestPermission().catch(() => {});
+  readNotify();
+  refreshCounts();
+});
+// A topic's name is its password on ntfy.sh: long and random.
+function newTopic() {
+  const abc = "abcdefghijklmnopqrstuvwxyz0123456789";
+  return "https://ntfy.sh/ow-" + [...crypto.getRandomValues(new Uint8Array(20))].map(n => abc[n % abc.length]).join("");
+}
+async function notifySheet() {
+  const capture = document.body.dataset.mode === "add";
+  let topic = notifyState?.topic ?? "";
+  for (;;) {
+    const r = await ask(`<div class="sheet-title">Notifications</div>
+      <div class="hint">${capture ? `Hear on your phone when ${esc(ownerName ?? "the list's owner")} marks what you sent done, with any note.`
+        : "Hear on your phone when someone sends you a task."}
+       Install the ntfy app, put a topic's address here (New topic makes one), and subscribe to it in the app:
+       Copy gives its name, which is what the app asks for. Saving sends it a test message.</div>
+      <input id="ntfy-topic" value="${esc(topic)}" placeholder="https://ntfy.sh/your-topic" autocomplete="off"
+       autocapitalize="off" spellcheck="false" aria-label="The topic's address">
+      <div class="chips"><button data-a="new">New topic</button><button data-a="copy">Copy</button></div>
+      <input id="ntfy-token" type="password" autocomplete="off" aria-label="Access token" placeholder="${
+        notifyState?.token ? "Access token: kept" : "Access token (a server of your own)"}">
+      <div class="sheet-buttons">${notifyState?.on ? `<button data-a="off" class="danger">Turn off</button>` : ""}
+       <button data-a="cancel">Cancel</button><button class="primary" data-a="save">Save</button></div>`,
+      async (e, done) => {
+        const b = e.target.closest("[data-a=new], [data-a=copy], [data-a=off], [data-a=save]"), field = sheet.querySelector("#ntfy-topic");
+        if (!b) return;
+        if (b.dataset.a === "new") return field.value = newTopic();
+        // The topic's name, what ntfy's app asks for; its server is ntfy.sh unless the address says otherwise.
+        if (b.dataset.a === "copy") {
+          const name = field.value.trim().replace(/\/+$/, "").split("/").pop();
+          return navigator.clipboard?.writeText(name).then(() => toast(`Copied ${name}`), () => field.select());
+        }
+        done({a: b.dataset.a, topic: field.value.trim(), token: sheet.querySelector("#ntfy-token").value.trim()});
+      });
+    if (!r) return;
+    try {
+      if (r.a === "off") await post("/api/notify", {off: true});
+      else await post("/api/notify", {topic: r.topic, link: `${location.origin}/`, ...r.token && {token: r.token}});
+      toast(r.a === "off" ? "Notifications are off" : "Saved: a test message is on its way");
+      return readNotify();
+    } catch (e) {
+      toast(e.message, true);
+      topic = r.topic;  // back to the sheet, to fix it
+    }
+  }
+}
+notifyBox.querySelector("[data-a=notify]").addEventListener("click", notifySheet);
 // Key hints beside the controls: while the keys are in use (body.keyboard),
 // always, or never; per device.
 function applyHints(mode) {

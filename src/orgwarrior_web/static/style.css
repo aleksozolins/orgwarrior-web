@@ -88,6 +88,13 @@ header {
 #tabs a.saved { background: transparent; border: 1px dashed var(--muted); padding: 5px 11px; }
 #tabs a.saved.on { background: var(--accent); border-color: var(--accent);
   outline: 1px dashed var(--bg); outline-offset: -4px; }  /* shown, still apart */
+/* How many tasks it lists: not in its text (that's the label), and ::before,
+   since its key hint is the ::after; ordered after the label, before the hint. */
+#tabs a[data-count] { display: inline-flex; align-items: center; }
+#tabs a[data-count]::before { content: attr(data-count); order: 1; margin-left: 6px; padding: 0 6px;
+  border-radius: 999px; font-size: 13px; font-weight: 600; background: var(--accent); color: var(--bg); }
+#tabs a[data-count]::after { order: 2; }
+#tabs a.on[data-count]::before { background: var(--bg); color: var(--accent); }
 #savetab { flex: none; font: inherit; font-size: 15px; padding: 5px 11px; border-radius: 999px;
   border: 1px dashed var(--line); background: transparent; color: var(--muted); }
 #search { display: flex; gap: 8px; }
@@ -109,13 +116,18 @@ header {
 .keys-only .setting-title, .clocked-title { margin-top: 14px; }
 #themes, #modes, #hints, #clockreport { display: flex; flex-wrap: wrap; gap: 6px; }
 #modes { margin-top: 8px; }
+#notify { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+#notify .setting-title { flex-basis: 100%; margin-bottom: 0; }
+#notify button { font: inherit; font-size: 15px; padding: 7px 12px; border-radius: 999px; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#notify button[aria-checked="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 #themes button, #modes button, #hints button, #clockreport button {
   font: inherit; font-size: 15px; padding: 7px 12px; border-radius: 999px;
 }
 #themes button[aria-checked="true"], #modes button[aria-checked="true"], #hints button[aria-checked="true"],
 #clockreport button[aria-checked="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 /* The fields' and buttons' look; each rule below sets its size. */
-#q, #themes button, #modes button, #hints button, #clockreport button,
+#q, #themes button, #modes button, #hints button, #clockreport button, #notify button,
 #dr-title, .moves button, .chips button, .actions button, .state-chip,
 .list button, .sheet-buttons button, .date-row button, .bar-head button,
 .move-list button, .sheet-body textarea, .sheet-body input:not([type=date]), .sheet-body select,

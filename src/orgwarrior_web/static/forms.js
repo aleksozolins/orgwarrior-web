@@ -239,6 +239,7 @@ async function showAdd() {
 function showCapture(name) {
   const whose = name ? `${name}'s list` : "Adding a task";
   document.body.dataset.mode = "add";
+  ownerName = name;
   document.title = name ? `ow · ${name}` : "orgwarrior";
   document.querySelector(".topbar").insertAdjacentHTML("beforeend", `<span class="whose">${esc(whose)}<small>${
     name ? `You can add to it; only ${esc(name)} sees it.` : "This key adds; it can't see the list."}</small></span>`);

@@ -23,7 +23,7 @@ from orgwarrior import help as helpmod
 from orgwarrior.api import Orgwarrior, OrgwarriorError
 from orgwarrior.config import ConfigError
 
-from orgwarrior_web import feed, keymap, setup
+from orgwarrior_web import feed, keymap, notify, setup
 from orgwarrior_web.auth import Tokens, default_path, token_main
 from orgwarrior_web.jsonfile import JsonFile
 from orgwarrior_web.sanitize import sanitize
@@ -84,20 +84,39 @@ def key_table(ow: Orgwarrior) -> dict:
         raise ConfigError(str(e)) from None
 
 
+def is_file_query(query: str) -> bool:
+    """A file's outline (projects.org, projects.org::ID), not an agenda view."""
+    return bool(re.fullmatch(r"\S+\.org(::\S+)?", query.strip()))
+
+
 def tab_row(ow: Orgwarrior) -> list[dict]:
-    """The page's tabs, [{"label", "query"}]: [web.tabs] in the config
-    (label = anything the query box takes, in order), else orgwarrior's
-    views.  Checked at startup, so a typo stops the server, not the page."""
+    """The page's tabs, [{"label", "query", "count"}]: [web.tabs] in the
+    config (label = anything the query box takes, in order), else
+    orgwarrior's views; count, from [web] counts, whether the tab shows how
+    many tasks it lists.  Checked at startup, so a typo stops the server,
+    not the page."""
     web = ow.config.web
-    if unknown := set(web) - {"tabs", "calendar", "name", "keys"}:
+    if unknown := set(web) - {"tabs", "calendar", "name", "keys", "counts", "notify"}:
         raise ConfigError(f"[web] has no key {sorted(unknown)[0]!r}")
     if "tabs" not in web:
-        return [{"label": v, "query": v} for v in ow.views()]
-    tabs = web["tabs"]
-    if not isinstance(tabs, dict) or not tabs or not all(
-            isinstance(q, str) and q.strip() for q in tabs.values()):
-        raise ConfigError('[web.tabs] has to map tab labels to queries, like next = "next"')
-    return [{"label": label, "query": query.strip()} for label, query in tabs.items()]
+        row = [{"label": v, "query": v} for v in ow.views()]
+    else:
+        tabs = web["tabs"]
+        if not isinstance(tabs, dict) or not tabs or not all(
+                isinstance(q, str) and q.strip() for q in tabs.values()):
+            raise ConfigError('[web.tabs] has to map tab labels to queries, like next = "next"')
+        row = [{"label": label, "query": query.strip()} for label, query in tabs.items()]
+    counts = web.get("counts", [])
+    if not isinstance(counts, list) or not all(isinstance(c, str) for c in counts):
+        raise ConfigError('[web] counts has to be a list of tab labels, like counts = ["inbox"]')
+    by_label = {t["label"]: t for t in row}
+    for label in counts:
+        if label not in by_label:
+            raise ConfigError(f"[web] counts has {label!r}, which isn't one of the tabs")
+        if is_file_query(by_label[label]["query"]):
+            raise ConfigError(f"[web] counts has {label!r}, a file's outline: counts are for agenda views")
+        by_label[label]["count"] = True
+    return row
 
 
 class SavedTabs:
@@ -115,9 +134,10 @@ class SavedTabs:
         return self.file.load() if self.file else self._tabs
 
     def change(self, op: str, label: str, config: list[dict], query: str | None = None,
-               to: str | None = None, step: int = 0) -> list[dict]:
-        """Add (LABEL, QUERY), rename (LABEL to TO), move (LABEL by STEP) or
-        remove a saved tab; CONFIG's tabs are the config's, not changed here."""
+               to: str | None = None, step: int = 0, count: bool = False) -> list[dict]:
+        """Add (LABEL, QUERY), rename (LABEL to TO), move (LABEL by STEP),
+        count (show how many tasks it lists, or not) or remove a saved tab;
+        CONFIG's tabs are the config's, not changed here."""
         tabs = [dict(t) for t in self.load()]
         taken = {t["label"] for t in config} | {t["label"] for t in tabs}
         label, to = (label or "").strip(), (to or "").strip()
@@ -147,6 +167,10 @@ class SavedTabs:
                 tabs[at], tabs[j] = tabs[j], tabs[at]
         elif op == "remove":
             del tabs[at]
+        elif op == "count":
+            if is_file_query(tabs[at]["query"]):
+                raise OrgwarriorError("A count is for an agenda view, not a file's outline")
+            tabs[at]["count"] = bool(count)
         else:
             raise OrgwarriorError(f"{op!r} isn't a change to a tab")
         if self.file:
@@ -175,6 +199,8 @@ class Handler(BaseHTTPRequestHandler):
     calendar: dict  # [web.calendar], checked
     name: str | None  # [web] name
     keys: dict  # keymap.resolve's, [web.keys] over the defaults
+    notify: dict  # [web.notify], checked
+    subscriptions: notify.Subscriptions
     tokens: Tokens | None  # None: no sign-in at all
     open_without_tokens: bool  # on loopback, until the first token is made
     secure: bool
@@ -321,6 +347,10 @@ class Handler(BaseHTTPRequestHandler):
                                    "views": list(self.ow.config.views),
                                    "colors": self.ow.config.colors, "keymap": self.keys,
                                    **self.ow.keywords()})
+        if url.path == "/api/notify":
+            if not self.signed_in(("full", "add")):
+                return self.refused()
+            return self.send_json(self.notify_state())
         if url.path == "/api/sent":
             # An add token's own; open (no tokens), there's no one to ask for.
             if not self.signed_in(("add",)) or self.scope != "add":
@@ -349,6 +379,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(self.ow.view(query.get("q", [""])[0]))
         if url.path == "/api/clock":
             return self.send_json(self.running_clocks())
+        if url.path == "/api/counts":
+            return self.send_json(self.tab_counts())
         if url.path == "/api/report":
             # The query as the box has it: `clocked week +@phone`.
             return self.send_json(self.ow.report(query.get("q", [""])[0].removeprefix("clocked").strip()))
@@ -382,6 +414,8 @@ class Handler(BaseHTTPRequestHandler):
         body = self.body
         if url.path == "/api/sign-in":
             return self.sign_in_posted(str(body["key"]))
+        if url.path == "/api/notify":
+            return self.send_json(self.set_notify(body))
         if self.scope == "add":
             return self.add_for(body) if url.path == "/api/add" else self.refused()
         if url.path == "/api/act":
@@ -389,7 +423,7 @@ class Handler(BaseHTTPRequestHandler):
                                               body.get("note"), body.get("new")))
         if url.path == "/api/tabs":
             self.saved_tabs.change(body["op"], body.get("label"), self.tabs, body.get("query"),
-                                   body.get("to"), body.get("step", 0))
+                                   body.get("to"), body.get("step", 0), body.get("count", False))
             return self.send_json({"tabs": self.all_tabs()})
         if url.path == "/api/run":
             return self.send_json(self.run_line(body["line"]))
@@ -470,6 +504,50 @@ class Handler(BaseHTTPRequestHandler):
             r = self.ow.add(**fields, scheduled=body.get("scheduled") or None,
                             deadline=body.get("deadline") or None, **mark)
         self.send_json({"heading": r["heading"]})  # not its ID: nothing to open
+
+    def tab_counts(self) -> dict:
+        """{label: how many tasks it lists} for the tabs with a count; one
+        whose query fails (a saved tab gone stale) is left out."""
+        counts = {}
+        for t in self.all_tabs():
+            if t.get("count"):
+                try:
+                    counts[t["label"]] = len({r["id"] for r in self.ow.view(t["query"]) if r.get("id")})
+                except OrgwarriorError:
+                    pass
+        return counts
+
+    def notify_state(self) -> dict:
+        """Where this device's person hears from: the list's owner (a full
+        token) of what's sent to them, a sender (an add token) of what's
+        done with what they sent.  The token never goes back to the page."""
+        sub = self.subscriptions.get(self.who if self.scope == "add" else None)
+        return {"on": bool(sub), "topic": sub and sub["topic"], "token": bool(sub and sub.get("token"))}
+
+    def set_notify(self, body: dict) -> dict:
+        """Turn notifications on (a test message sent first: a topic that
+        doesn't work isn't kept) or off, for whoever this device is."""
+        sender = self.who if self.scope == "add" else None
+        if body.get("off"):
+            self.subscriptions.set(sender, None)
+            return self.notify_state()
+        topic, link = str(body.get("topic") or "").strip(), str(body.get("link") or "")
+        if not re.match(r"https?://", link):
+            raise OrgwarriorError("The page didn't say its own address")
+        old = self.subscriptions.get(sender) or {}
+        # Left out: the token already kept, for the same topic.
+        token = body["token"].strip() if isinstance(body.get("token"), str) else \
+            old.get("token") if old.get("topic") == topic else None
+        sub = {"topic": topic, "token": token or None, "link": link}
+        whose = self.name or "the list's owner"
+        try:
+            notify.publish(sub, "Notifications are on",
+                           f"You'll hear here when {whose} marks what you sent done." if sender
+                           else "You'll hear here when someone sends you a task.")
+        except notify.NotifyError as e:
+            raise OrgwarriorError(str(e)) from None
+        self.subscriptions.set(sender, sub)
+        return self.notify_state()
 
     def all_tabs(self) -> list[dict]:
         """The config's tabs, then the saved ones (`saved`: the page can change them)."""
@@ -629,7 +707,8 @@ class Server(ThreadingHTTPServer):
 
 def make_server(host: str, port: int, ow: Orgwarrior, cert: str | None = None,
                 key: str | None = None, tokens: Tokens | None = None,
-                saved_tabs: SavedTabs | None = None) -> HTTPServer:
+                saved_tabs: SavedTabs | None = None,
+                subscriptions: notify.Subscriptions | None = None) -> HTTPServer:
     """With TOKENS, the API wants a signed-in device; only on loopback, and
     until the first token is made (revoking them all doesn't reopen it), is
     it open."""
@@ -641,7 +720,8 @@ def make_server(host: str, port: int, ow: Orgwarrior, cert: str | None = None,
         "ow": web_orgwarrior(ow), "tabs": tab_row(ow), "tokens": tokens,
         "saved_tabs": saved_tabs or SavedTabs(),
         "calendar": feed.options(ow.config.web.get("calendar", {})), "name": instance_name(ow),
-        "keys": key_table(ow),
+        "keys": key_table(ow), "notify": notify.options(ow.config.web.get("notify", {})),
+        "subscriptions": subscriptions or notify.Subscriptions(),
         "open_without_tokens": loopback, "secure": bool(cert),
         # The CA `orgwarrior-web cert` made, beside the certificate.
         "ca_file": Path(cert).with_name("ca.crt") if cert else None})
@@ -688,14 +768,16 @@ def main(argv: list[str] | None = None) -> int:
     if args.key and not args.cert:
         ap.error("--key needs --cert")
     try:
+        state = default_path().parent
         server = make_server(args.host, args.port, Orgwarrior(socket=args.socket),
-                             args.cert, args.key, Tokens(),
-                             SavedTabs(default_path().with_name("tabs.json")))
+                             args.cert, args.key, Tokens(), SavedTabs(state / "tabs.json"),
+                             notify.Subscriptions(state / "notify.json"))
     except (OrgwarriorError, OSError, ValueError) as e:  # ssl.SSLError is an OSError
         print(f"orgwarrior-web: {e}", file=sys.stderr)
         return 1
     scheme = "https" if args.cert else "http"
     print(f"orgwarrior-web on {scheme}://{args.host}:{args.port}/", file=sys.stderr)
+    notify.Watcher(server, state / "notify-seen.json").start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:

@@ -116,6 +116,7 @@ async function tabSheet(tab = null) {
   const change = async body => {
     try {
       drawTabs((await post("/api/tabs", body)).tabs);
+      refreshCounts();
       return true;
     } catch (e) {
       toast(e.message, true);
@@ -129,22 +130,25 @@ async function tabSheet(tab = null) {
     if (label) await change({op: "add", label, query: shown});
     return;
   }
-  // ◀ ▶ move it and keep the sheet: a tab is often moved more than one place.
+  // ◀ ▶ move it and keep the sheet: a tab is often moved more than one place;
+  // Count too, a choice that acts at once.
   for (let label = tab.textContent;;) {
+    const counted = tab.hasAttribute("data-counted"), outline = /^\S+\.org(::\S+)?$/.test(tab.dataset.query);
     const r = await ask(
       `<div class="sheet-title">Tab: ${esc(label)}</div><div class="hint">${esc(tab.dataset.query)}</div>
        <input id="tab-label" value="${esc(label)}" autofocus autocomplete="off" autocapitalize="off" aria-label="Its label">
+       ${outline ? "" : `<div class="chips"><button data-a="count" aria-pressed="${counted}">Show how many it lists</button></div>`}
        <div class="sheet-buttons"><button data-a="move" data-step="-1" aria-label="Move left">◀</button>
         <button data-a="move" data-step="1" aria-label="Move right">▶</button>
         <button data-a="remove" class="danger">Remove</button><button data-a="cancel">Cancel</button>
         <button class="primary" data-a="save">Rename</button></div>`,
       (e, done) => {
-        const b = e.target.closest("[data-a=move], [data-a=remove], [data-a=save]");
+        const b = e.target.closest("[data-a=move], [data-a=count], [data-a=remove], [data-a=save]");
         if (b) done({a: b.dataset.a, step: Number(b.dataset.step), to: sheet.querySelector("#tab-label").value.trim()});
       });
     if (!r) return;
-    if (r.a === "move") {
-      if (!await change({op: "move", label, step: r.step})) return;
+    if (r.a === "move" || r.a === "count") {
+      if (!await change(r.a === "move" ? {op: "move", label, step: r.step} : {op: "count", label, count: !counted})) return;
       tab = [...tabs.querySelectorAll("a.saved")].find(a => a.textContent === label);
       continue;
     }
