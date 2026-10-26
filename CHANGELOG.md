@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.5.0 (2026-10-25)
+
+Needs orgwarrior 0.5.0.
+
+- **Notifications through [ntfy](https://ntfy.sh).** Your phone hears when
+  someone sends you a task with an add token, and theirs hears when you
+  mark it done, with the note you wrote. Set a topic under ⚙ →
+  Notifications, on your page or on the page someone adds to your list
+  from. `[web.notify] states` adds states besides the done ones that tell
+  the sender, such as `["WAIT"]`. The server notices changes on its own
+  once a minute, wherever they're made. Messages carry a task's title and
+  state, never its details. docs/notifications.md has the setup.
+- **Counts on tabs.** `[web] counts = ["inbox"]` shows how many tasks a tab
+  lists, and a saved tab can show one from its own sheet. The installed
+  app shows the total on its icon where the platform allows it (on an
+  iPhone, after Allow under ⚙).
+
 ## 0.4.3 (2026-10-24)
 
 From a newcomer's second run through the quick start:
