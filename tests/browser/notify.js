@@ -62,8 +62,10 @@ await run(async t => {
   await tap("#notify [data-a=notify]");
   await page.waitForSelector("#ntfy-topic");
   await tap("#sheet [data-a=new]");
-  await check("New topic: a long random one on ntfy.sh",
-    /^https:\/\/ntfy\.sh\/ow-[a-z0-9]{20}$/.test(await page.$eval("#ntfy-topic", i => i.value)));
+  await check("New topic: a long random name (ntfy.sh's)",
+    /^ow-[a-z0-9]{20}$/.test(await page.$eval("#ntfy-topic", i => i.value)));
+  await check("the fields say what they take", (await page.$$eval("#sheet label", ls => ls.map(l => l.textContent).join("|")))
+    .includes("its name on ntfy.sh, or its whole address"));
   await typeInto("#ntfy-topic", `${ntfy}/broken`, true);
   await tap("#sheet [data-a=save]");
   await expect("a topic that refuses: said, and back to the sheet", s => /refused it: forbidden/.test(s.toast) && s.sheet);

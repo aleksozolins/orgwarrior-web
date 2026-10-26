@@ -118,6 +118,8 @@ header {
 #modes { margin-top: 8px; }
 #notify { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
 #notify .setting-title { flex-basis: 100%; margin-bottom: 0; }
+ol.steps { margin: 6px 0; padding-left: 20px; }
+label.field-label { display: block; font-size: 14px; margin-bottom: 4px; }
 #notify button { font: inherit; font-size: 15px; padding: 7px 12px; border-radius: 999px; max-width: 100%;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #notify button[aria-checked="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }

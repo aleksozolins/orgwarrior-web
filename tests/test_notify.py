@@ -45,6 +45,11 @@ def test_changes():
 
 
 def test_topic_parts():
+    # A name alone is ntfy.sh's; a whole address, any server's.
+    assert notify.topic_url(" ow-abc_1 ") == "https://ntfy.sh/ow-abc_1"
+    assert notify.topic_url("https://push.example.com/mine/") == "https://push.example.com/mine"
+    with pytest.raises(NotifyError, match="like ow-"):
+        notify.topic_url("ntfy.sh/abc")
     assert topic_parts("https://ntfy.sh/ow-abc_1") == ("https://ntfy.sh/", "ow-abc_1")
     assert topic_parts(" https://push.example.com/ntfy/mine/ ") == ("https://push.example.com/ntfy/", "mine")
     for bad in ("", "ntfy.sh/abc", "https://ntfy.sh/", "ftp://ntfy.sh/abc", "https://ntfy.sh/a b"):
@@ -129,7 +134,7 @@ def test_routes(tmp_path, monkeypatch, capsys):
             except urllib.error.HTTPError as e:
                 return e.code, json.loads(e.read())
         assert call("/api/notify", robin) == (200, {"on": False, "topic": None, "token": False})
-        status, body = call("/api/notify", robin, {"topic": "https://ntfy.sh/robins", "link": "https://sam.example/"})
+        status, body = call("/api/notify", robin, {"topic": "robins", "link": "https://sam.example/"})
         assert status == 200 and body == {"on": True, "topic": "https://ntfy.sh/robins", "token": False}
         assert "when Sam marks what you sent done" in sent[-1][2]
         assert subs.get("robin") == {"topic": "https://ntfy.sh/robins", "token": None, "link": "https://sam.example/"}

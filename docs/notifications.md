@@ -46,13 +46,17 @@ are free and need no account. Anyone who knows a topic's name can read
 it, though, so the name works like a password. The page makes a long
 random one for you.
 
+The page's **Topic** field takes the topic's name (`ow-x7k2q9…`) for
+ntfy.sh, or its whole address (`https://ntfy.example.com/ow-x7k2q9…`) for
+a server of your own. The ntfy app asks for the name either way, and
+**Copy** copies it.
+
 ### Hearing about what's sent to you
 
-1. On your page, open ⚙, then **Notifications**, and tap **New topic**.
-   Tap **Copy**, which copies the topic's name (the part after
-   `ntfy.sh/`).
+1. On your page, open ⚙, then **Notifications**, and tap **New topic**,
+   then **Copy**.
 2. In the ntfy app, tap **+** and paste the name. For a server of your
-   own, change the app's server to yours there too.
+   own, turn on "Use another server" there and give its address.
 3. Back on the page, tap **Save**. A test message arrives in the app. If
    it can't be sent, the page says why and keeps the sheet open to fix it.
 
@@ -61,9 +65,10 @@ later, with its title and who sent it. Tapping it opens the task.
 
 ### Hearing back about what you sent
 
-On the page you use to add to someone else's list, open ⚙ and set up
-**Notifications** the same way. You can use the same topic as for your own
-list. When the list's owner marks something you sent done, you hear its
+On the page you use to add to someone else's list, open ⚙, then
+**Notifications**, put in the topic you already subscribed to, and tap
+**Save**. One topic can carry both kinds of message. A new one works too:
+subscribe to it in the app first. When the list's owner marks something you sent done, you hear its
 title, its new state, and the note they wrote when they changed it, if
 any. Tapping it opens the page with your sent list.
 
@@ -102,8 +107,8 @@ restored) isn't announced as new.
 
 ### Your own ntfy server
 
-Put the topic's full address (`https://ntfy.example.com/mytopic`) in the
-sheet, and an access token if your server needs one. The token is kept on
+Put the topic's whole address (`https://ntfy.example.com/mytopic`) in the
+**Topic** field, and an access token if your server asks for one. The token is kept on
 the orgwarrior-web server and never sent back to the page. For messages to
 reach an iPhone right away, a self-hosted ntfy server needs
 `upstream-base-url: "https://ntfy.sh"` in its config: only a message's ID

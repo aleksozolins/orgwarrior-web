@@ -531,9 +531,13 @@ class Handler(BaseHTTPRequestHandler):
         if body.get("off"):
             self.subscriptions.set(sender, None)
             return self.notify_state()
-        topic, link = str(body.get("topic") or "").strip(), str(body.get("link") or "")
+        link = str(body.get("link") or "")
         if not re.match(r"https?://", link):
             raise OrgwarriorError("The page didn't say its own address")
+        try:
+            topic = notify.topic_url(str(body.get("topic") or ""))
+        except notify.NotifyError as e:
+            raise OrgwarriorError(str(e)) from None
         old = self.subscriptions.get(sender) or {}
         # Left out: the token already kept, for the same topic.
         token = body["token"].strip() if isinstance(body.get("token"), str) else \

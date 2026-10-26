@@ -42,14 +42,29 @@ def options(notify) -> dict:
     return {"states": states}
 
 
+TOPIC = re.compile(r"[-_A-Za-z0-9]{1,64}")
+BAD_TOPIC = ("That isn't a topic. Give its name (letters, digits, - and _), like ow-x7k2q9, "
+             "or for a server of your own its whole address, like https://ntfy.example.com/ow-x7k2q9")
+
+
+def topic_url(text: str) -> str:
+    """A topic as typed, its name alone (on ntfy.sh) or its whole address,
+    as an address."""
+    text = (text or "").strip().rstrip("/")
+    if TOPIC.fullmatch(text):
+        return f"https://ntfy.sh/{text}"
+    topic_parts(text)
+    return text
+
+
 def topic_parts(url: str) -> tuple[str, str]:
-    """(server, topic) of a topic's URL: https://ntfy.sh/abc is
+    """(server, topic) of a topic's address: https://ntfy.sh/abc is
     ("https://ntfy.sh/", "abc"), where ntfy takes JSON for any topic."""
     parts = urlsplit((url or "").strip())
     path = parts.path.rstrip("/")
     topic = path.rsplit("/", 1)[-1]
-    if parts.scheme not in ("http", "https") or not parts.netloc or not re.fullmatch(r"[-_A-Za-z0-9]{1,64}", topic):
-        raise NotifyError("That isn't a topic's address. It looks like https://ntfy.sh/your-topic")
+    if parts.scheme not in ("http", "https") or not parts.netloc or not TOPIC.fullmatch(topic):
+        raise NotifyError(BAD_TOPIC)
     return f"{parts.scheme}://{parts.netloc}{path[:-len(topic)]}", topic
 
 

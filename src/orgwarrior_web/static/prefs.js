@@ -95,7 +95,7 @@ async function readNotify() {
   try { notifyState = await api("/api/notify"); } catch (e) { notifyState = null; }
   notifyBox.hidden = !notifyState;
   const b = notifyBox.querySelector("[data-a=notify]");
-  b.textContent = notifyState?.on ? `On: ${notifyState.topic.replace(/^https?:\/\//, "")}` : "Off: set up…";
+  b.textContent = notifyState?.on ? `On: ${topicShown(notifyState.topic)}` : "Off: set up…";
   b.setAttribute("aria-checked", String(!!notifyState?.on));
   // An iPhone's home-screen app (navigator.standalone, Apple's own) shows a
   // badge only once it may notify, asked from a tap; elsewhere a badge needs
@@ -108,35 +108,39 @@ notifyBox.querySelector("[data-a=badge]").addEventListener("click", async () => 
   readNotify();
   refreshCounts();
 });
+// A topic as the ntfy app knows it: its name on ntfy.sh (the app's own
+// server), else its whole address.  The server takes either.
+const topicShown = t => t.startsWith("https://ntfy.sh/") ? t.slice("https://ntfy.sh/".length) : t;
 // A topic's name is its password on ntfy.sh: long and random.
 function newTopic() {
   const abc = "abcdefghijklmnopqrstuvwxyz0123456789";
-  return "https://ntfy.sh/ow-" + [...crypto.getRandomValues(new Uint8Array(20))].map(n => abc[n % abc.length]).join("");
+  return "ow-" + [...crypto.getRandomValues(new Uint8Array(20))].map(n => abc[n % abc.length]).join("");
 }
 async function notifySheet() {
   const capture = document.body.dataset.mode === "add";
-  let topic = notifyState?.topic ?? "";
+  let topic = notifyState?.topic ? topicShown(notifyState.topic) : "";
   for (;;) {
     const r = await ask(`<div class="sheet-title">Notifications</div>
       <div class="hint">${capture ? `Hear on your phone when ${esc(ownerName ?? "the list's owner")} marks what you sent done, with any note.`
-        : "Hear on your phone when someone sends you a task."}
-       Install the ntfy app, put a topic's address here (New topic makes one), and subscribe to it in the app:
-       Copy gives its name, which is what the app asks for. Saving sends it a test message.</div>
-      <input id="ntfy-topic" value="${esc(topic)}" placeholder="https://ntfy.sh/your-topic" autocomplete="off"
-       autocapitalize="off" spellcheck="false" aria-label="The topic's address">
+        : "Hear on your phone when someone sends you a task."}</div>
+      <ol class="hint steps"><li>Install the ntfy app.</li><li>Tap New topic, then Copy.</li>
+       <li>In the app, tap + and paste it.</li><li>Tap Save here. A test message arrives in the app.</li></ol>
+      <label class="field-label" for="ntfy-topic">Topic: its name on ntfy.sh, or its whole address on a server of your own</label>
+      <input id="ntfy-topic" value="${esc(topic)}" placeholder="ow-x7k2q9" autocomplete="off"
+       autocapitalize="off" spellcheck="false">
       <div class="chips"><button data-a="new">New topic</button><button data-a="copy">Copy</button></div>
-      <input id="ntfy-token" type="password" autocomplete="off" aria-label="Access token" placeholder="${
-        notifyState?.token ? "Access token: kept" : "Access token (a server of your own)"}">
+      <label class="field-label" for="ntfy-token">Access token: only for a server of your own that asks for one</label>
+      <input id="ntfy-token" type="password" autocomplete="off" placeholder="${notifyState?.token ? "Kept: type a new one to change it" : "None"}">
       <div class="sheet-buttons">${notifyState?.on ? `<button data-a="off" class="danger">Turn off</button>` : ""}
        <button data-a="cancel">Cancel</button><button class="primary" data-a="save">Save</button></div>`,
       async (e, done) => {
         const b = e.target.closest("[data-a=new], [data-a=copy], [data-a=off], [data-a=save]"), field = sheet.querySelector("#ntfy-topic");
         if (!b) return;
         if (b.dataset.a === "new") return field.value = newTopic();
-        // The topic's name, what ntfy's app asks for; its server is ntfy.sh unless the address says otherwise.
+        // The name, what the app asks for (its server is a setting of its own there).
         if (b.dataset.a === "copy") {
-          const name = field.value.trim().replace(/\/+$/, "").split("/").pop();
-          return navigator.clipboard?.writeText(name).then(() => toast(`Copied ${name}`), () => field.select());
+          const text = field.value.trim().replace(/\/+$/, "").split("/").pop();
+          return navigator.clipboard?.writeText(text).then(() => toast(`Copied ${text}`), () => field.select());
         }
         done({a: b.dataset.a, topic: field.value.trim(), token: sheet.querySelector("#ntfy-token").value.trim()});
       });
