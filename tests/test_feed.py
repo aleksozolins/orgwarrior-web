@@ -95,6 +95,21 @@ def test_sexps():
     assert [e["SUMMARY"] for e in evs] == [r"Birthday: Robin\, 46\; with a comma", "Birthdays"]
     assert evs[0]["UID"] == "h-Birthdays-sexp1-20261020@orgwarrior"
     assert evs[1]["DTEND;VALUE=DATE"] == "20261104"
+    # Two on one day get UIDs of their own, or a calendar keeps only one.
+    twins = entry("Twins", {"kind": "sexp", "sexp": "(diary-anniversary 10 20 1980)", "dates": [
+        {"date": "2026-10-20", "text": "Sam"}, {"date": "2026-10-20", "text": "Kim"}]})
+    assert [e["UID"] for e in feed(twins)] == ["h-Twins-sexp1-20261020@orgwarrior",
+                                               "h-Twins-sexp1-20261020-2@orgwarrior"]
+
+
+def test_birthdays():
+    contacts = entry("Contacts", {"kind": "sexp", "sexp": "(org-contacts-anniversaries)", "dates": [
+        {"date": "2026-10-20", "text": "Birthday: Robin"}]})
+    other = entry("Solstice", {"kind": "sexp", "sexp": "(diary-float 12 0 3)", "dates": [
+        {"date": "2026-12-21", "text": None}]})
+    assert len(feed(contacts, other)) == 2
+    # Only org-contacts' line goes: other sexps stay.
+    assert [e["SUMMARY"] for e in feed(contacts, other, birthdays=False)] == ["Solstice"]
 
 
 def test_fold():
@@ -106,6 +121,6 @@ def test_fold():
 def test_options():
     assert options({}) == DEFAULTS
     assert options({"alarm_time": "07:30"})["alarm_time"] == "07:30"
-    for bad in ({"alarms": "yes"}, {"alarm_time": "9am"}, {"color": "red"}, {"deadline_prefix": 1}):
+    for bad in ({"alarms": "yes"}, {"birthdays": "no"}, {"alarm_time": "9am"}, {"color": "red"}, {"deadline_prefix": 1}):
         with pytest.raises(ConfigError):
             options(bad)

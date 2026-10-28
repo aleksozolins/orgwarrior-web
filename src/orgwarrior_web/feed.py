@@ -7,7 +7,10 @@ import re
 from orgwarrior.config import ConfigError
 
 DEFAULTS = {"keywords": True, "deadlines": True, "alarms": True, "alarm_time": "09:00",
-            "deadline_prefix": "Due: "}
+            "deadline_prefix": "Due: ", "birthdays": True}
+
+# org-contacts' birthdays: often a copy of the address book's, which a calendar app shows already.
+BIRTHDAYS = "(org-contacts-anniversaries"
 
 FREQ = {"h": "HOURLY", "d": "DAILY", "w": "WEEKLY", "m": "MONTHLY", "y": "YEARLY"}
 # iCalendar durations have no months or years: a warning of 2m is 60 days.
@@ -18,7 +21,7 @@ def options(table: dict) -> dict:
     """[web.calendar] over the defaults, checked at startup like the tabs."""
     if unknown := set(table) - set(DEFAULTS):
         raise ConfigError(f"[web.calendar] has no key {sorted(unknown)[0]!r}")
-    for key in ("keywords", "deadlines", "alarms"):
+    for key in ("keywords", "deadlines", "alarms", "birthdays"):
         if not isinstance(table.get(key, True), bool):
             raise ConfigError(f"[web.calendar] {key} has to be true or false")
     if not isinstance(table.get("deadline_prefix", ""), str):
@@ -120,11 +123,17 @@ def ics(entries: list[dict], opts: dict, task_url, now: datetime.datetime | None
                 continue
             if kind not in ("scheduled", "deadline"):
                 n += 1
+            if not opts["birthdays"] and stamp.get("sexp", "").startswith(BIRTHDAYS):
+                continue
             # Stable across fetches, so a calendar updates an event in place.
             uid = f"{e['id']}-{kind if kind in ('scheduled', 'deadline') else f'{kind}{n}'}"
             if "dates" in stamp:  # a diary sexp, one event per day it holds
+                seen = {}
                 for d in stamp["dates"]:
-                    lines += ["BEGIN:VEVENT", f"UID:{uid}-{ical_date(d['date'])}@orgwarrior",
+                    # One sexp can hold a day several times (two birthdays): a shared UID merges them.
+                    k = seen[d["date"]] = seen.get(d["date"], 0) + 1
+                    day_uid = f"{uid}-{ical_date(d['date'])}" + (f"-{k}" if k > 1 else "")
+                    lines += ["BEGIN:VEVENT", f"UID:{day_uid}@orgwarrior",
                               f"DTSTAMP:{stamp_now}", f"DTSTART;VALUE=DATE:{ical_date(d['date'])}",
                               f"DTEND;VALUE=DATE:{ical_date(next_day(d['date']))}",
                               f"SUMMARY:{escape(d['text'] or summary)}", *common, "END:VEVENT"]

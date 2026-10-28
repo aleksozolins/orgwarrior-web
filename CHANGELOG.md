@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.1 (2026-10-28)
+
+Needs orgwarrior 0.5.2.
+
+- Two events a diary sexp put on the same day, like two birthdays, got
+  the same UID in the calendar feed, so a calendar app showed only one of
+  them. Each now has its own.
+- `[web.calendar] birthdays = false` leaves org-contacts' birthdays out of
+  the feed, for a calendar app that already shows your contacts'
+  birthdays (Google Calendar does). Other diary sexps stay.
+
 ## 0.5.0 (2026-10-25)
 
 Needs orgwarrior 0.5.0.

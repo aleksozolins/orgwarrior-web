@@ -49,7 +49,12 @@ deadlines = true           # show deadlines as events, not just scheduled dates
 alarms = true              # turn a deadline's warning (-3d) into an alarm
 alarm_time = "09:00"       # the alarm's time, for a deadline with no time
 deadline_prefix = "Due: "  # what a deadline's title starts with ("" for nothing)
+birthdays = true           # include org-contacts' birthdays, %%(org-contacts-anniversaries)
 ```
+
+Set `birthdays = false` when your calendar app already shows your
+contacts' birthdays, as Google Calendar does, and org-contacts has the
+same people. Other diary sexps stay in the feed.
 
 Times have no time zone. They're in the device's own time, as in org.
 iCalendar has no way to say org's `.+` and `++` repeaters, so they become

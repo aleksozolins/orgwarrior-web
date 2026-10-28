@@ -155,8 +155,11 @@ file, never committed, holds the maintainer's deployment and to-do.
   calendar's copy: a calendar app showing both shows it twice), all-day end exclusive, timed ones
   floating (no time zone), repeaters as RRULEs (`.+`/`++` as plain ones:
   iCalendar can't say them), diary sexps one event a day for a year,
-  UIDs the whole hash plus the stamp's kind (stable across fetches), a
-  deadline's warning a VALARM. No cache: milliseconds. Any token in
+  UIDs the whole hash plus the stamp's kind (stable across fetches; a
+  sexp's day numbered when it holds two: a shared UID merges them), a
+  deadline's warning a VALARM. `birthdays = false` drops
+  `%%(org-contacts-anniversaries)` by the engine's `sexp`, never by the
+  text (org-contacts-birthday-format is the user's). No cache: milliseconds. Any token in
   `?key=`, logged without it. Not chosen: importing someone's Google
   calendars (the user's setup, not this package's).
 - **PWA**: the service worker exists only because browsers want one
